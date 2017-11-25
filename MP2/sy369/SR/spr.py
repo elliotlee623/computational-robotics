@@ -40,19 +40,13 @@ def polygonAngles(vertices):
 def findReflexiveVertices(polygons):
     vertices=[]
 
-
+    #know for sure first 2 vertices are correct
     # loop to iterate through all the polygons
-    for i in range(len(polygons)-2):
+    for i in range(len(polygons)):
         answer = polygonAngles(polygons[i])
-        print polygons[i]
-        print answer
         for j in range(len(answer)):
             if answer[j] > 90:
                 vertices.append(polygons[i][j])
-
-    # Your code goes here
-    # You should return a list of (x,y) values as lists, i.e.
-    # vertices = [[x1,y1],[x2,y2],...]
     
     return vertices
 
@@ -62,20 +56,30 @@ Compute the roadmap graph
 def computeSPRoadmap(polygons, reflexVertices):
     vertexMap = dict()
     adjacencyListMap = dict()
-    
-    # Your code goes here
-    # You should check for each pair of vertices whether the
-    # edge between them should belong to the shortest path
-    # roadmap. 
-    #
-    # Your vertexMap should look like
-    # {1: [5.2,6.7], 2: [9.2,2.3], ... }
-    #
-    # and your adjacencyListMap should look like
-    # {1: [[2, 5.95], [3, 4.72]], 2: [[1, 5.95], [5,3.52]], ... }
-    #
-    # The vertex labels used here should start from 1
-    
+
+    # build vertexMap dictionary
+    for i in range(len(reflexVertices)):
+        vertexMap[i+1] = reflexVertices[i]
+
+    #checking if its on the same polygon
+    count = 0
+    for i in range(len(polygons)):
+        #iterating through the various vertices of a polygon
+        tempPoly = polygons[i]
+        #if on same poly
+        for j in range(len(tempPoly)):
+            if tempPoly[j] == reflexVertices[count]:
+                #makes sure its not the last vertex of that polygon
+                if j == len(tempPoly-1):
+                #checks if its consecutive with end
+                    if tempPoly[0] = reflexVertices[count-j]:
+                        #add to ALM
+                #check to see if consecutive reflex vertex
+                else:
+                    if tempPoly[j+1] == reflexVertices[counts+1]:
+                        #add to ALM
+
+
     return vertexMap, adjacencyListMap
 
 '''
