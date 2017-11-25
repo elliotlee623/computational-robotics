@@ -40,7 +40,7 @@ def polygonAngles(vertices):
 #calculates distance between two points
 def distance(point1, point2):
     dist = math.sqrt((point2[0]-point1[0])**2 + (point2[1]-point1[1])**2)
-    return dist
+    return round(dist,3)
 
 # updates the adjacency linked map dictionary
 def updateALM(point1, point2, vertexMap, adjacencyListMap):
@@ -113,6 +113,7 @@ def computeSPRoadmap(polygons, reflexVertices):
                 count+=1
 
 
+
     return vertexMap, adjacencyListMap
 
 '''
@@ -121,7 +122,11 @@ Perform uniform cost search
 def uniformCostSearch(adjListMap, start, goal):
     path = []
     pathLength = 0
+
+    reached = False
+    path.append(start)
     
+    while(not reached)
     # Your code goes here. As the result, the function should
     # return a list of vertex labels, e.g.
     #
