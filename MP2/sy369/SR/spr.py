@@ -37,6 +37,38 @@ def polygonAngles(vertices):
 
     return angles
 
+#calculates distance between two points
+def distance(point1, point2):
+    dist = math.sqrt((point2[0]-point1[0])**2 + (point2[1]-point1[1])**2)
+    return dist
+
+# updates the adjacency linked map dictionary
+def updateALM(point1, point2, vertexMap, adjacencyListMap):
+    #finding indexes for the two points
+    for i in range(len(vertexMap)):
+        if point1 == vertexMap.get(i+1):
+            p1 = i+1
+        if point2 == vertexMap.get(i+1):
+            p2 = i+1
+
+    temp1 = adjacencyListMap.get(p1, None)
+    temp2 = adjacencyListMap.get(p2, None)
+
+    if temp1 == None:
+        temp1 = []
+    if temp2 == None:
+        temp2 = []
+    dist = distance(point1, point2)
+    #updating lists for ALM
+    temp1.append([p2,dist])
+    temp2.append([p1,dist])
+    #updating ALM
+    adjacencyListMap[p1] = temp1
+    adjacencyListMap[p2] = temp2
+    return adjacencyListMap
+
+#---------------------------------------------------------------#
+
 def findReflexiveVertices(polygons):
     vertices=[]
 
@@ -66,18 +98,19 @@ def computeSPRoadmap(polygons, reflexVertices):
     for i in range(len(polygons)):
         #iterating through the various vertices of a polygon
         tempPoly = polygons[i]
+        first = count
         #if on same poly
         for j in range(len(tempPoly)):
             if tempPoly[j] == reflexVertices[count]:
                 #makes sure its not the last vertex of that polygon
-                if j == len(tempPoly-1):
+                if j == len(tempPoly)-1:
                 #checks if its consecutive with end
-                    if tempPoly[0] = reflexVertices[count-j]:
-                        #add to ALM
-                #check to see if consecutive reflex vertex
+                    if tempPoly[0] == reflexVertices[first]:
+                        adjacencyListMap = updateALM(tempPoly[len(tempPoly)-1], tempPoly[0], vertexMap, adjacencyListMap)
                 else:
-                    if tempPoly[j+1] == reflexVertices[counts+1]:
-                        #add to ALM
+                    if tempPoly[j+1] == reflexVertices[count+1]:
+                        adjacencyListMap = updateALM(tempPoly[j], tempPoly[j+1], vertexMap, adjacencyListMap)
+                count+=1
 
 
     return vertexMap, adjacencyListMap
