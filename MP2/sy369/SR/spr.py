@@ -71,10 +71,89 @@ def updateALM(point1, point2, vertexMap, adjacencyListMap):
     adjacencyListMap[p2] = temp2
     return adjacencyListMap
 
-def findShortest(vectDistances):
-    temp = 0
-    for i in range(len(vectDistances)):
-        
+#adds points to the graph in order based on length from increasing to decreasing
+def addToGraph(vectDistances, possibleVects, path):
+    if possibleVects == None:
+        return vectDistances
+    #for all adjacent vectors of a specified vector
+    for i in range(len(possibleVects)):
+        inserted = False
+        #checks to see if its been visited
+        for j in range(len(path)):
+            if possibleVects[i][0] == path[j]:
+                inserted = True
+                break
+        #checks to see if its already in the list
+        for j in range(len(vectDistances)):
+            if possibleVects[i][0] == vectDistances[j][0]:
+                #replacing it if better value found
+                if possibleVects[i][1] < vectDistances[j][1]:
+                    vectDistances[j][1] = possibleVects[i][1]
+                    inserted = True
+                    break
+        #adds it in if not already in
+        for j in range(len(vectDistances)):
+            if possibleVects[i][1] < vectDistances[j][1]:
+                vectDistances.insert(j-1, possibleVects[i])
+                inserted = True
+                break
+        #if it is the largest value possible, adds it in at the end
+        if not inserted:
+            vectDistances.append(possibleVects[i])
+    return vectDistances    
+
+#find if two lines are intersecting, line formed by point1 and point2, compared with point3 and point4
+#returns false if not intersecting, returns true if intersecting
+# def intersecting(point1, point2, point3, point4):
+#     xdiff = (point1[0] - point2[0], point3[0] - point4[0])
+#     ydiff = (point1[1] - point2[1], point3[1] - point4[1])
+
+#     def det(a, b):
+#         return a[0] * b[1] - a[1] * b[0]
+
+#     div = det(xdiff, ydiff)
+#     if div == 0:
+#         return False
+
+#     return True
+
+# def bitangents(polygons, vertexMap, adjListMap):
+#     print len(vertexMap)
+#     vMap = []
+#     for i in range(len(vertexMap)):
+#         vMap.append(vertexMap.get(i+1))
+
+#     while(len(vMap) > 1):
+#         p1 = vMap.pop(0)
+#         tempMap = vMap
+#         #comparing for each posible vertex
+#         for i in range(len(tempMap)):
+#             intersect = False
+#             p2 = tempMap.pop(0)
+#             #comparing against each posible polygon
+#             for j in range(len(polygons)):
+#                 points = polygons[j]
+#                 #each of the lines in the polygon
+#                 for k in range(len(points)-1):
+#                     p3 = points[k]
+#                     p4 = points[k+1]
+#                     print p1, p2, p3, p4
+#                     intersect = intersecting(p1, p2, p3, p4)
+#                     if intersect:
+#                         break
+#                 #completing loop of polygon
+#                 p3 = points[len(points)-1]
+#                 p4 = points[0]
+#                 intersect = intersecting(p1, p2, p3, p4)
+#                 if intersect:
+#                     break
+#                 #make sure to loop back
+#             # no intersection found, can be added to ALM
+#             if not intersect:
+#                 adjListMap = updateALM(p1, p2, vertexMap, adjListMap)
+
+#     return adjListMap
+
 
 #---------------------------------------------------------------#
 
@@ -122,6 +201,8 @@ def computeSPRoadmap(polygons, reflexVertices):
                     if tempPoly[j+1] == reflexVertices[count+1]:
                         adjacencyListMap = updateALM(tempPoly[j], tempPoly[j+1], vertexMap, adjacencyListMap)
                 count+=1
+
+    # adjacencyListMap = bitangents(polygons, vertexMap, adjacencyListMap)
                 
     return vertexMap, adjacencyListMap
 
@@ -131,7 +212,22 @@ Perform uniform cost search
 def uniformCostSearch(adjListMap, start, goal):
     path = []
     pathLength = 0
-    
+    vectDistances = []
+    start = 3
+    path.append(start)
+    vectDistances = addToGraph(vectDistances, adjListMap.get(start, None), path)
+    key = 0
+    goal = 7
+    while(key != goal):
+        vertex = vectDistances.pop(0)
+        key = vertex[0]
+        path.append(key)
+        pathLength += vertex[1]
+        vectDistances = addToGraph(vectDistances, adjListMap.get(key, None), path)
+        if len(vectDistances) == 0 and key != goal:
+            pathLength = -1
+            print "No path found"
+            break
     # Your code goes here. As the result, the function should
     # return a list of vertex labels, e.g.
     #
@@ -150,6 +246,7 @@ def updateRoadmap(polygons, vertexMap, adjListMap, x1, y1, x2, y2):
     startLabel = 0
     goalLabel = -1
 
+    updatedALMap = adjListMap
     # Your code goes here. Note that for convenience, we 
     # let start and goal have vertex labels 0 and -1,
     # respectively. Make sure you use these as your labels
