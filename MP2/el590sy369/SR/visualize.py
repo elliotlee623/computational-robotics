@@ -71,22 +71,6 @@ def drawPolygons(polygons):
     for p in range(0, len(polygons)):
         patch = createPolygonPatch(polygons[p])
         ax.add_patch(patch)
-    plt.show()
-
-def newline(p1, p2):
-    ax = plt.gca()
-    xmin, xmax = ax.get_xbound()
-
-    if(p2[0] == p1[0]):
-        xmin = xmax = p1[0]
-        ymin, ymax = ax.get_ybound()
-    else:
-        ymax = p1[1]+(p2[1]-p1[1])/(p2[0]-p1[0])*(xmax-p1[0])
-        ymin = p1[1]+(p2[1]-p1[1])/(p2[0]-p1[0])*(xmin-p1[0])
-
-    l = mlines.Line2D([xmin,xmax], [ymin,ymax])
-    ax.add_line(l)
-    return l
 
 if __name__ == "__main__":
 
@@ -115,5 +99,6 @@ if __name__ == "__main__":
     p2 = [2,2]
     # Draw the polygons
     drawPolygons(polygons)
-    newline(p1,p2)
+    plt.draw()
+    plt.plot([3, 2], [4, 5], 'k-', lw=2)
     plt.show
