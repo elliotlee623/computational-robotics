@@ -99,6 +99,6 @@ if __name__ == "__main__":
     p2 = [2,2]
     # Draw the polygons
     drawPolygons(polygons)
-    plt.draw()
-    plt.plot([3, 2], [4, 5], 'k-', lw=2)
+    ax2 = fig.add_subplot(2,2,2, axisbg='grey')
+    ax2.plot(x, y, 'c', linewidth=3.3)
     plt.show
