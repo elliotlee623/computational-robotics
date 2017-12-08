@@ -71,6 +71,90 @@ def updateALM(point1, point2, vertexMap, adjacencyListMap):
     adjacencyListMap[p2] = temp2
     return adjacencyListMap
 
+#adds points to the graph in order based on length from increasing to decreasing
+def addToGraph(vectDistances, possibleVects, path):
+    if possibleVects == None:
+        return vectDistances
+    #for all adjacent vectors of a specified vector
+    for i in range(len(possibleVects)):
+        inserted = False
+        #checks to see if its been visited
+        for j in range(len(path)):
+            if possibleVects[i][0] == path[j]:
+                inserted = True
+                break
+        #checks to see if its already in the list
+        for j in range(len(vectDistances)):
+            if possibleVects[i][0] == vectDistances[j][0]:
+                #replacing it if better value found
+                if possibleVects[i][1] < vectDistances[j][1]:
+                    vectDistances[j][1] = possibleVects[i][1]
+                    inserted = True
+                    break
+        #adds it in if not already in
+        for j in range(len(vectDistances)):
+            if possibleVects[i][1] < vectDistances[j][1]:
+                vectDistances.insert(j-1, possibleVects[i])
+                inserted = True
+                break
+        #if it is the largest value possible, adds it in at the end
+        if not inserted:
+            vectDistances.append(possibleVects[i])
+    return vectDistances    
+
+#find if two lines are intersecting, line formed by point1 and point2, compared with point3 and point4
+#returns false if not intersecting, returns true if intersecting
+# def intersecting(point1, point2, point3, point4):
+#     xdiff = (point1[0] - point2[0], point3[0] - point4[0])
+#     ydiff = (point1[1] - point2[1], point3[1] - point4[1])
+
+#     def det(a, b):
+#         return a[0] * b[1] - a[1] * b[0]
+
+#     div = det(xdiff, ydiff)
+#     if div == 0:
+#         return False
+
+#     return True
+
+# def bitangents(polygons, vertexMap, adjListMap):
+#     print len(vertexMap)
+#     vMap = []
+#     for i in range(len(vertexMap)):
+#         vMap.append(vertexMap.get(i+1))
+
+#     while(len(vMap) > 1):
+#         p1 = vMap.pop(0)
+#         tempMap = vMap
+#         #comparing for each posible vertex
+#         for i in range(len(tempMap)):
+#             intersect = False
+#             p2 = tempMap.pop(0)
+#             #comparing against each posible polygon
+#             for j in range(len(polygons)):
+#                 points = polygons[j]
+#                 #each of the lines in the polygon
+#                 for k in range(len(points)-1):
+#                     p3 = points[k]
+#                     p4 = points[k+1]
+#                     print p1, p2, p3, p4
+#                     intersect = intersecting(p1, p2, p3, p4)
+#                     if intersect:
+#                         break
+#                 #completing loop of polygon
+#                 p3 = points[len(points)-1]
+#                 p4 = points[0]
+#                 intersect = intersecting(p1, p2, p3, p4)
+#                 if intersect:
+#                     break
+#                 #make sure to loop back
+#             # no intersection found, can be added to ALM
+#             if not intersect:
+#                 adjListMap = updateALM(p1, p2, vertexMap, adjListMap)
+
+#     return adjListMap
+
+
 #---------------------------------------------------------------#
 
 def findReflexiveVertices(polygons):
@@ -103,7 +187,7 @@ def computeSPRoadmap(polygons, reflexVertices):
         #iterating through the various vertices of a polygon
         tempPoly = polygons[i]
         #next poly for comparison
-        nextPoly = polygons[i+1]
+        # nextPoly = polygons[i+1]
         first = count
         #if on same poly
         for j in range(len(tempPoly)):
@@ -117,54 +201,33 @@ def computeSPRoadmap(polygons, reflexVertices):
                     if tempPoly[j+1] == reflexVertices[count+1]:
                         adjacencyListMap = updateALM(tempPoly[j], tempPoly[j+1], vertexMap, adjacencyListMap)
                 count+=1
-        #not same poly
-        for a in range(len(tempPoly)):
-            for k in range(len(nextPoly)):
-                for l in range(len(polygons)):
-                    temp2 = polygons[l]
-                    for m in range(len(polygons[l])):
-                        #X1,X2,Y1,Y2 for the "line". extended by 100 because must be line segment
-                        X1 = 100*tempPoly[j][0]
-                        Y1 = 100*tempPoly[j][1]
-                        X2 = 100*nextPoly[k][0]
-                        Y2 = 100*nextPoly[k][1]
-                        #X3,Y3,X4,Y4 are all the edges, iterated through in a loop
-                        X3 = temp2[m][0]
-                        Y3 = temp2[m][1]
-                        X4 = temp2[m+1][0]
-                        Y4 = temp2[m+1][1]
 
-                        #define intersection interval
-                        left = max(min(X1,X2),min(X3,X4))
-                        right = min(max(X1,X2),max(X3,X4))
-                        bottom = max(min(Y1,Y2),min(Y3,Y4))
-                        top = min(max(Y1,Y2),max(Y2,Y3))
-
-                        if(max(X1,X2) < min(X3,temp2[0][0])):
-                            adjacencyListMap = updateALM(tempPoly[j], nextPoly[k], vertexMap, adjacencyListMap)
-                        A1 = (Y1-Y2)/(X1-nextPoly[k][[0]])
-                        A2 = (Y3-Y4)
-
-                        if(A1==A2):
-                            #parallel lines, do nothing
-                        if((left == right) && (top==bottom)):
-                            #intersection
-                        else:
-                            adjacencyListMap = updateALM(tempPoly[j], nextPoly[k], vertexMap, adjacencyListMap)
-
+    # adjacencyListMap = bitangents(polygons, vertexMap, adjacencyListMap)
+                
     return vertexMap, adjacencyListMap
 
 '''
-Perform uniform cost search
+Perform uniform cost search 
 '''
 def uniformCostSearch(adjListMap, start, goal):
     path = []
     pathLength = 0
-
-    reached = False
+    vectDistances = []
+    start = 3
     path.append(start)
-
-    while(not reached)
+    vectDistances = addToGraph(vectDistances, adjListMap.get(start, None), path)
+    key = 0
+    goal = 7
+    while(key != goal):
+        vertex = vectDistances.pop(0)
+        key = vertex[0]
+        path.append(key)
+        pathLength += vertex[1]
+        vectDistances = addToGraph(vectDistances, adjListMap.get(key, None), path)
+        if len(vectDistances) == 0 and key != goal:
+            pathLength = -1
+            print "No path found"
+            break
     # Your code goes here. As the result, the function should
     # return a list of vertex labels, e.g.
     #
@@ -172,7 +235,7 @@ def uniformCostSearch(adjListMap, start, goal):
     #
     # in which 23 would be the label for the start and 37 the
     # label for the goal.
-
+    
     return path, pathLength
 
 '''
@@ -183,22 +246,23 @@ def updateRoadmap(polygons, vertexMap, adjListMap, x1, y1, x2, y2):
     startLabel = 0
     goalLabel = -1
 
-    # Your code goes here. Note that for convenience, we
+    updatedALMap = adjListMap
+    # Your code goes here. Note that for convenience, we 
     # let start and goal have vertex labels 0 and -1,
     # respectively. Make sure you use these as your labels
     # for the start and goal vertices in the shortest path
     # roadmap. Note that what you do here is similar to
-    # when you construct the roadmap.
-
+    # when you construct the roadmap. 
+    
     return startLabel, goalLabel, updatedALMap
 
 if __name__ == "__main__":
-
+    
     # Retrive file name for input data
     if(len(sys.argv) < 6):
-        print ("Five arguments required: python spr.py [env-file] [x1] [y1] [x2] [y2]")
+        print "Five arguments required: python spr.py [env-file] [x1] [y1] [x2] [y2]"
         exit()
-
+    
     filename = sys.argv[1]
     x1 = float(sys.argv[2])
     y1 = float(sys.argv[3])
@@ -216,37 +280,37 @@ if __name__ == "__main__":
         polygons.append(polygon)
 
     # Print out the data
-    print("Pologonal obstacles:")
+    print "Pologonal obstacles:"
     for p in range(0, len(polygons)):
-        print (str(polygons[p]))
-    print ("")
+        print str(polygons[p])
+    print ""
 
     # Compute reflex vertices
     reflexVertices = findReflexiveVertices(polygons)
-    print ("Reflexive vertices:")
-    print (str(reflexVertices))
-    print ("")
+    print "Reflexive vertices:"
+    print str(reflexVertices)
+    print ""
 
-    # Compute the roadmap
+    # Compute the roadmap 
     vertexMap, adjListMap = computeSPRoadmap(polygons, reflexVertices)
-    print ("Vertex map:")
-    print (str(vertexMap))
-    print ("")
-    print ("Base roadmap:")
-    print (str(adjListMap))
-    print ("")
+    print "Vertex map:"
+    print str(vertexMap)
+    print ""
+    print "Base roadmap:"
+    print str(adjListMap)
+    print ""
 
     # Update roadmap
     start, goal, updatedALMap = updateRoadmap(polygons, vertexMap, adjListMap, x1, y1, x2, y2)
-    print ("Updated roadmap:")
-    print (str(updatedALMap))
-    print ("")
+    print "Updated roadmap:"
+    print str(updatedALMap)
+    print ""
 
-    # Search for a solution
+    # Search for a solution     
     path, length = uniformCostSearch(updatedALMap, start, goal)
-    print ("Final path:")
-    print (str(path))
-    print ("Final path length:") + (str(length))
-
+    print "Final path:"
+    print str(path)
+    print "Final path length:" + str(length)
+    
 
     # Extra visualization elements goes here
