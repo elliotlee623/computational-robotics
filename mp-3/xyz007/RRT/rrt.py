@@ -1,11 +1,9 @@
 import sys
-
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 import matplotlib.patches as patches
 import numpy as np
-from math import hypot
-from numpy import linalg
+from math import *
 
 '''
 Set up matplotlib to create a plot with an empty square
@@ -94,6 +92,7 @@ def drawProblem(robotStart, robotGoal, polygons):
         ax.add_patch(patch)
     plt.show()
 
+
 '''
 Grow a simple RRT
 '''
@@ -102,45 +101,61 @@ def growSimpleRRT(points):
     adjListMap = dict()
     #make list and insert into dictionary at end
     newPointsList = []
+    newPoints = []
 
-    newPointsList[0] = points[0]
-    newPoints[0] = points[0]
+    #p1 and p2 form line, p3 is point we are tring to find perpendicular to line
+    def distanceToLine(p1, p2, p3):
+        x_diff = p2[0] - p1[0]
+        y_diff = p2[1] - p1[1]
+        x_diff = round(x_diff, 8)
+        y_diff = round(y_diff, 8)
+        num = abs(y_diff*p3[0] - x_diff*p3[1] + p2[0]*p1[1] - p2[1]*p1[0])
+        den = sqrt(y_diff**2 + x_diff**2)
+        if den == 0:
+            return 0
+        return num/den
+
+    print "grow simple"
+    newPointsList.append(points[1])
+    newPoints.append(points[1])
     # Your code goes here
-    minDist = 10
     indexMin = 0
     withLine = False
-    pointDist = 10
-    lineDist = 10
-    newPointIndex = 1
 
-    for i in range(1,len(points)):
-        for j in range(0,len(newPointsList)):
-            #distance between new sample point and points in random tree
-            pointDist = math.hypot(points[i][0] - newPointsList[j][0], points[i][1] - newPointsList[j][1])
-            if(pointDist < minDist):
+    for i in range(2, len(points)):
+        minDist = 10*sqrt(2)
+        linePoint = (0,0)
+        for j in range(0, len(newPointsList)):
+            pointDist = hypot(points[i][0] - newPointsList[j][0], points[i][1] - newPointsList[j][1])
+            #if find a closer point
+            if pointDist < minDist:
                 minDist = pointDist
-                #update whenever newest min dist is to a point
                 withLine = False
                 indexMin = j
-            if(len(newPointsList) > 1):
+            #check if able to create line from points
+            if len(newPointsList) > 1:
+                #checking to make sure not at last point
                 if j != len(newPointsList)-1:
-                    #distance between new sample point and line created by two adjacent points in random tree
-                    lineDist = norm(np.cross(newPointsList[j+1]-newPointsList[j], newPointsList[j]-points[i]))/norm(newPointsList[j+1]-newPointsList[j])
-                    k = ((newPointsList[j+1][1]-newPointsList[j][1])*(points[i][0]-newPointsList[j][0])-(newPointsList[j+1][1]-newPointsList[j][1])*(points[i][1]-newPointsList[j][1]))/((newPointsList[j+1][1]-newPointsList[j][1])**2+(newPointsList[j+1][0]-newPointsList[j][0])**2)
-                    lineX = points[i][0]-k*(newPointsList[j+1][1]-newPointsList[j][1])
-                    lineY = points[i][1]-k*(newPointsList[j+1][0]-newPointsList[j][0])
-                    linePoint = (lineX,lineY)
-            if(lineDist < minDist):
-                minDist = lineDist
-                #update whenever newest min dist is to a line
-                withLine = True
-                indexMin = j
-        #min should be lower than 10
-        if(minDist != 10):
-            newPointsList.append(points[i])
-            if(withLine):
-                newPointsList.append(linePoint)
-    #to do: add list items to dict
+                    lineDist = distanceToLine(newPointsList[j], newPointsList[j+1], points[i])
+                    if lineDist < minDist and lineDist != 0:
+                        withLine = True
+                        #calculate the point
+                        x1 = points[i][0]
+                        y1 = points[i][1]
+                        x2 = newPointsList[j][0]
+                        y2 = newPointsList[j][1]
+                        x3 = newPointsList[j+1][0]
+                        y3 = newPointsList[j+1][1] 
+                        k = ((y2-y1) * (x3-x1) - (x2-x1) * (y3-y1)) / ((y2-y1)**2 + (x2-x1)**2)
+                        x4 = x3 - k * (y2-y1)
+                        y4 = y3 + k * (x2-x1)
+                        linePoint = (x4,y4)
+
+        newPointsList.append(points[i])
+        if withLine:
+            newPointsList.append(linePoint)
+            withLine = False
+
 
     return newPoints, adjListMap
 
@@ -150,6 +165,9 @@ Perform basic search
 def basicSearch(tree, start, goal):
     path = []
 
+    # temp = tree.get(start)
+    # print "This is temp" 
+    # print temp
     # Your code goes here. As the result, the function should
     # return a list of vertex labels, e.g.
     #
