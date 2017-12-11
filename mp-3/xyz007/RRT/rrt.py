@@ -165,6 +165,14 @@ def growSimpleRRT(points):
         linePoint = (0,0)
         for j in range(0, len(newPointsList)):
             pointDist = hypot(points[i][0] - newPointsList[j][0], points[i][1] - newPointsList[j][1])
+            #set distance from latest RRT point to new sample point
+            setDistance = 0.5
+            xChange = (setDistance/pointDist)*(points[i][0]-newPointsList[j][0])
+            yChange = (setDistance/pointDist)*(points[i][1]-newPointsList[j][1])
+            newX = newPointsList[j][0] + xChange
+            newY = newPointsList[j][1] + yChange
+            #new point along the line from the closest RRT point to the sample point, set to a distance 0.5 units from the RRT point
+            smallPoint = (newX,newY)
             #if find a closer point
             if pointDist < minDist:
                 minDist = pointDist
@@ -201,22 +209,22 @@ def growSimpleRRT(points):
                 adjListMap = updateALM(newPointsList[indexMin+1], linePoint, newPoints, adjListMap)
 
                 #connecting line point to new point
-                newPointsList.append(points[i])
-                newPoints[len(newPoints)+1] = points[i]
+                newPointsList.append(smallPoint)
+                newPoints[len(newPoints)+1] = smallPoint
                 #call update once to add
-                adjListMap = updateALM(linePoint, points[i], newPoints, adjListMap)
+                adjListMap = updateALM(linePoint, smallPoint, newPoints, adjListMap)
                 withLine = False
             else:
-                newPointsList.append(points[i])
-                newPoints[len(newPoints)+1] = points[i]
+                newPointsList.append(smallPoint)
+                newPoints[len(newPoints)+1] = smallPoint
                 #call update once to add
                 adjListMap = updateALM(newPointsList[indexMin], points[i], newPoints, adjListMap)
         else:
             #if there is only one other point present
-            newPointsList.append(points[i])
-            newPoints[len(newPoints)+1] = points[i]
+            newPointsList.append(smallPoint)
+            newPoints[len(newPoints)+1] = smallPoint
             #call update once to add
-            adjListMap = updateALM(newPointsList[indexMin], points[i], newPoints, adjListMap)
+            adjListMap = updateALM(newPointsList[indexMin], smallPoint, newPoints, adjListMap)
 
     print newPoints
     print adjListMap
@@ -252,12 +260,10 @@ def displayRRTandPath(points, tree, path, robotStart = None, robotGoal = None, p
     # drawProblem and modify it to do what you need.
     # You should draw the problem when applicable.
     fig, ax = setupPlot()
-    for p in range(0, len(tree)):
-        patch = createRRTPatch(tree, 'black')
-        ax.add_patch(patch)
-    for p in range(0,len(path)):
-        patch = createPathPatch(path,'orange')
-        ax.add_patch(patch)
+    patch = createRRTPatch(tree, 'black')
+    ax.add_patch(patch)
+    patch = createPathPatch(path,'orange')
+    ax.add_patch(patch)
     plt.show()
     return
 
