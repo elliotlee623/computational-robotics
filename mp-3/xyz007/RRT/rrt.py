@@ -279,7 +279,8 @@ def isCollisionFree(robot, point, obstacles):
             b = robot[i][1] - (robot[i][0]*slope)
             xDist = robot[i+1][0] - robot[i][0]
             for j in range(0,100):
-                xPoint = robot[i][0] + (xDist/j)
+                increment = xDist/100
+                xPoint = robot[i][0] + (j*increment)
                 yPoint = (xPoint*slope) + b
                 for k in range(0,len(obstacles)):
                     if(abs(xPoint-obstacles[k][0]) < 0.2):
