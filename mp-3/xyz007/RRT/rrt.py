@@ -44,6 +44,41 @@ def createPolygonPatch(polygon, color):
 
     return patch
 
+def createPathPatch(path, color):
+    verts = []
+    codes= []
+    for v in range(0, len(path)):
+        xy = points[path[v]]
+        verts.append(xy)
+        if v == 0:
+            codes.append(Path.MOVETO)
+        else:
+            codes.append(Path.LINETO)
+    verts.append(verts[0])
+    path = Path(verts, codes)
+    patch = patches.PathPatch(path, facecolor=color, lw=1)
+
+    return patch
+
+def createRRTPatch(tree, color):
+    verts = []
+    codes= []
+    for v in range(0, len(tree)):
+        while(len(tree[v]) > 1):
+            temp = tree[v].pop()
+            key = temp[0]
+            xy = points[key]
+            verts.append((xy[0]/10., xy[1]/10.))
+        if v == 0:
+            codes.append(Path.MOVETO)
+        else:
+            codes.append(Path.LINETO)
+    verts.append(verts[0])
+    path = Path(verts, codes)
+    patch = patches.PathPatch(path, facecolor=color, lw=1)
+
+    return patch
+
 
 '''
 Render the problem
@@ -69,14 +104,16 @@ def growSimpleRRT(points):
     newPointsList = []
 
     newPointsList[0] = points[0]
+    newPoints[0] = points[0]
     # Your code goes here
     minDist = 10
     indexMin = 0
     withLine = False
     pointDist = 10
     lineDist = 10
+    newPointIndex = 1
 
-    for i in range(0,len(points)):
+    for i in range(1,len(points)):
         for j in range(0,len(newPointsList)):
             #distance between new sample point and points in random tree
             pointDist = math.hypot(points[i][0] - newPointsList[j][0], points[i][1] - newPointsList[j][1])
@@ -89,6 +126,10 @@ def growSimpleRRT(points):
                 if j != len(newPointsList)-1:
                     #distance between new sample point and line created by two adjacent points in random tree
                     lineDist = norm(np.cross(newPointsList[j+1]-newPointsList[j], newPointsList[j]-points[i]))/norm(newPointsList[j+1]-newPointsList[j])
+                    k = ((newPointsList[j+1][1]-newPointsList[j][1])*(points[i][0]-newPointsList[j][0])-(newPointsList[j+1][1]-newPointsList[j][1])*(points[i][1]-newPointsList[j][1]))/((newPointsList[j+1][1]-newPointsList[j][1])**2+(newPointsList[j+1][0]-newPointsList[j][0])**2)
+                    lineX = points[i][0]-k*(newPointsList[j+1][1]-newPointsList[j][1])
+                    lineY = points[i][1]-k*(newPointsList[j+1][0]-newPointsList[j][0])
+                    linePoint = (lineX,lineY)
             if(lineDist < minDist):
                 minDist = lineDist
                 #update whenever newest min dist is to a line
@@ -96,11 +137,9 @@ def growSimpleRRT(points):
                 indexMin = j
         #min should be lower than 10
         if(minDist != 10):
+            newPointsList.append(points[i])
             if(withLine):
-                #to do: add point from line
-                newPointsList.insert(indexMin,points[i])
-            else:
-                newPointsList.insert(indexMin,points[i])
+                newPointsList.append(linePoint)
     #to do: add list items to dict
 
     return newPoints, adjListMap
@@ -130,6 +169,14 @@ def displayRRTandPath(points, tree, path, robotStart = None, robotGoal = None, p
     # You could start by copying code from the function
     # drawProblem and modify it to do what you need.
     # You should draw the problem when applicable.
+    fig, ax = setupPlot()
+    for p in range(0, len(tree)):
+        patch = createRRTPatch(tree, 'black')
+        ax.add_patch(patch)
+    for p in range(0,len(path)):
+        patch = createPathPatch(path,'orange')
+        ax.add_patch(patch)
+    plt.show()
     return
 
 '''
