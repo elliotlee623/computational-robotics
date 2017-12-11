@@ -94,6 +94,44 @@ def drawProblem(robotStart, robotGoal, polygons):
 
 
 '''
+Builds an adjacencyList based on points
+'''
+# is given the nearest point found, and the point to connect
+def updateALM(point1, point2, vertexMap, adjacencyListMap):
+
+    # def distance(point1, point2):
+    #     dist = sqrt((point2[0]-point1[0])**2 + (point2[1]-point1[1])**2)
+    #     return round(dist,3)
+
+    #finding indexes for the two points
+    for i in range(len(vertexMap)):
+        if point1 == vertexMap.get(i+1):
+            p1 = i+1
+
+    p2 = len(vertexMap)
+    temp1 = adjacencyListMap.get(p1, None)
+    temp2 = adjacencyListMap.get(p2, None)
+
+    if temp1 == None:
+        temp1 = []
+    if temp2 == None:
+        temp2 = []
+
+    #updating lists for ALM
+    add = True
+    for i in range(len(temp1)):
+        if temp1[i] == [p2]:
+            add = False
+            break
+    if add:
+        temp1.append(p2)
+        temp2.append(p1)
+    #updating ALM
+    adjacencyListMap[p1] = temp1
+    adjacencyListMap[p2] = temp2
+    return adjacencyListMap
+
+'''
 Grow a simple RRT
 '''
 def growSimpleRRT(points):
@@ -101,7 +139,6 @@ def growSimpleRRT(points):
     adjListMap = dict()
     #make list and insert into dictionary at end
     newPointsList = []
-    newPoints = []
 
     #p1 and p2 form line, p3 is point we are tring to find perpendicular to line
     def distanceToLine(p1, p2, p3):
@@ -113,11 +150,12 @@ def growSimpleRRT(points):
         den = sqrt(y_diff**2 + x_diff**2)
         if den == 0:
             return 0
+
         return num/den
 
     print "grow simple"
     newPointsList.append(points[1])
-    newPoints.append(points[1])
+    newPoints[1] = points[1]
     # Your code goes here
     indexMin = 0
     withLine = False
@@ -139,6 +177,7 @@ def growSimpleRRT(points):
                     lineDist = distanceToLine(newPointsList[j], newPointsList[j+1], points[i])
                     if lineDist < minDist and lineDist != 0:
                         withLine = True
+                        indexMin = j
                         #calculate the point
                         x1 = points[i][0]
                         y1 = points[i][1]
@@ -149,13 +188,38 @@ def growSimpleRRT(points):
                         k = ((y2-y1) * (x3-x1) - (x2-x1) * (y3-y1)) / ((y2-y1)**2 + (x2-x1)**2)
                         x4 = x3 - k * (y2-y1)
                         y4 = y3 + k * (x2-x1)
-                        linePoint = (x4,y4)
+                        linePoint = (round(x4,4),round(y4,4))
 
-        newPointsList.append(points[i])
-        if withLine:
-            newPointsList.append(linePoint)
-            withLine = False
+        #if no line can be formed
+        if len(newPointsList) > 2:
+            if withLine:
+                #connect to both end points
+                newPointsList.append(linePoint)
+                newPoints[len(newPoints)+1] = linePoint
+                #call update twice, for each end point
+                adjListMap = updateALM(newPointsList[indexMin], linePoint, newPoints, adjListMap)
+                adjListMap = updateALM(newPointsList[indexMin+1], linePoint, newPoints, adjListMap)
 
+                #connecting line point to new point
+                newPointsList.append(points[i])
+                newPoints[len(newPoints)+1] = points[i]
+                #call update once to add
+                adjListMap = updateALM(linePoint, points[i], newPoints, adjListMap)
+                withLine = False
+            else:
+                newPointsList.append(points[i])
+                newPoints[len(newPoints)+1] = points[i]
+                #call update once to add
+                adjListMap = updateALM(newPointsList[indexMin], points[i], newPoints, adjListMap)
+        else:
+            #if there is only one other point present
+            newPointsList.append(points[i])
+            newPoints[len(newPoints)+1] = points[i]
+            #call update once to add
+            adjListMap = updateALM(newPointsList[indexMin], points[i], newPoints, adjListMap)
+
+    print newPoints
+    print adjListMap
 
     return newPoints, adjListMap
 
