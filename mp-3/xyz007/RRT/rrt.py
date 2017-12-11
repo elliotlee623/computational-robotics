@@ -204,7 +204,34 @@ def isCollisionFree(robot, point, obstacles):
 
     # Your code goes here.
 
-    return False
+    for i in range(0,len(robot)):
+        robot[i][0] = robot[i][0] + point[0]
+        robot[i][1] = robot[i][1] + point[1]
+    if(robot[i][0] >= 10 or robot[i][1] >= 10):
+        return False
+    for i in range(0,len(robot)):
+        if(i != len(robot)-1):
+            slope =(robot[i+1][1]-robot[i][1])/(robot[i+1][0]-robot[i][0])
+            b = robot[i][1] - (robot[i][0]*slope)
+            xDist = robot[i+1][0] - robot[i][0]
+            for j in range(0,100):
+                xPoint = robot[i][0] + (xDist/j)
+                yPoint = (xPoint*slope) + b
+                for k in range(0,len(obstacles)):
+                    if(abs(xPoint-obstacles[k][0]) < 0.2):
+                        if(abs(yPoint-obstacles[k][1]) < 0.2):
+                            return False
+        slope = (robot[0][1] - robot[i+1][1])/(robot[0][0]-robot[i+1][0])
+        b = robot[i+1][1] - (robot[i+1][0]*slope)
+        xDist = robot[i+1][0] - robot[i][0]
+        for j in range(0,10):
+            xPoint = robot[i][0] + (xDist/j)
+            yPoint = (xPoint*slope) + b
+            for k in range(0,len(obstacles)):
+                if(abs(xPoint-obstacles[k][0]) < 0.2):
+                    if(abs(yPoint-obstacles[k][1]) < 0.2):
+                        return False
+    return True
 
 '''
 The full RRT algorithm
