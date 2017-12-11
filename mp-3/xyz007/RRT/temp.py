@@ -2,6 +2,7 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 import matplotlib.patches as patches
+from matplotlib.patches import ConnectionPatch
 import numpy as np
 from math import *
 
@@ -23,7 +24,7 @@ def setupPlot():
     return fig, ax
 
 '''
-Make a patch for a single pology
+Make a patch for a single pologyn
 '''
 def createPolygonPatch(polygon, color):
     verts = []
@@ -35,43 +36,15 @@ def createPolygonPatch(polygon, color):
             codes.append(Path.MOVETO)
         else:
             codes.append(Path.LINETO)
+    print "polygon patch"
+    # print verts
+    # print codes
     verts.append(verts[0])
     codes.append(Path.CLOSEPOLY)
     path = Path(verts, codes)
     patch = patches.PathPatch(path, facecolor=color, lw=1)
 
-    return patch
-
-# def createPathPatch(path, color):
-#     verts = []
-#     codes= []
-#     for v in range(0, len(path)):
-#         xy = points[path[v]]
-#         verts.append(xy)
-#         if v == 0:
-#             codes.append(Path.MOVETO)
-#         else:
-#             codes.append(Path.LINETO)
-#     verts.append(verts[0])
-#     path = Path(verts, codes)
-#     patch = patches.PathPatch(path, facecolor=color, lw=1)
-
-#     return patch
-
-def createRRTPatch(branch, points, startPoint):
-    verts = [startPoint]
-    codes = [Path.MOVETO]
-
-    for i in range(len(branch)):
-        key = branch[i]
-        point = points[key]
-        verts.append(point)
-        codes.append(Path.LINETO)
-        verts.append(startPoint)
-        codes.append(Path.MOVETO)
-
-    path = Path(verts, codes)
-    patch = patches.PathPatch(path, facecolor='black', lw=1)
+    # print path
     return patch
 
 
@@ -150,7 +123,7 @@ def growSimpleRRT(points):
 
         return num/den
 
-    print "grow simple"
+    # print "grow simple"
     newPointsList.append(points[1])
     newPoints[1] = points[1]
     # Your code goes here
@@ -162,14 +135,6 @@ def growSimpleRRT(points):
         linePoint = (0,0)
         for j in range(0, len(newPointsList)):
             pointDist = hypot(points[i][0] - newPointsList[j][0], points[i][1] - newPointsList[j][1])
-            #set distance from latest RRT point to new sample point
-            setDistance = 0.5
-            xChange = (setDistance/pointDist)*(points[i][0]-newPointsList[j][0])
-            yChange = (setDistance/pointDist)*(points[i][1]-newPointsList[j][1])
-            newX = newPointsList[j][0] + xChange
-            newY = newPointsList[j][1] + yChange
-            #new point along the line from the closest RRT point to the sample point, set to a distance 0.5 units from the RRT point
-            smallPoint = (newX,newY)
             #if find a closer point
             if pointDist < minDist:
                 minDist = pointDist
@@ -206,25 +171,25 @@ def growSimpleRRT(points):
                 adjListMap = updateALM(newPointsList[indexMin+1], linePoint, newPoints, adjListMap)
 
                 #connecting line point to new point
-                newPointsList.append(smallPoint)
-                newPoints[len(newPoints)+1] = smallPoint
+                newPointsList.append(points[i])
+                newPoints[len(newPoints)+1] = points[i]
                 #call update once to add
-                adjListMap = updateALM(linePoint, smallPoint, newPoints, adjListMap)
+                adjListMap = updateALM(linePoint, points[i], newPoints, adjListMap)
                 withLine = False
             else:
-                newPointsList.append(smallPoint)
-                newPoints[len(newPoints)+1] = smallPoint
+                newPointsList.append(points[i])
+                newPoints[len(newPoints)+1] = points[i]
                 #call update once to add
-                adjListMap = updateALM(newPointsList[indexMin], smallPoint, newPoints, adjListMap)
+                adjListMap = updateALM(newPointsList[indexMin], points[i], newPoints, adjListMap)
         else:
             #if there is only one other point present
-            newPointsList.append(smallPoint)
-            newPoints[len(newPoints)+1] = smallPoint
+            newPointsList.append(points[i])
+            newPoints[len(newPoints)+1] = points[i]
             #call update once to add
-            adjListMap = updateALM(newPointsList[indexMin], smallPoint, newPoints, adjListMap)
+            adjListMap = updateALM(newPointsList[indexMin], points[i], newPoints, adjListMap)
 
-    print newPoints
-    print adjListMap
+    # print newPoints
+    # print adjListMap
 
     return newPoints, adjListMap
 
@@ -247,9 +212,25 @@ def basicSearch(tree, start, goal):
 
     return path
 
+def createRRTPatch(branch, points, startPoint):
+    verts = [startPoint]
+    codes = [Path.MOVETO]
+
+    for i in range(len(branch)):
+        key = branch[i]
+        point = points[key]
+        verts.append(point)
+        codes.append(Path.LINETO)
+        verts.append(startPoint)
+        codes.append(Path.MOVETO)
+
+    path = Path(verts, codes)
+    patch = patches.PathPatch(path, facecolor='black', lw=1)
+    return patch
+
 '''
 Display the RRT and Path
-'''
+''' 
 def displayRRTandPath(points, tree, path, robotStart = None, robotGoal = None, polygons = None):
 
     # Your code goes here
@@ -288,8 +269,7 @@ def isCollisionFree(robot, point, obstacles):
             b = robot[i][1] - (robot[i][0]*slope)
             xDist = robot[i+1][0] - robot[i][0]
             for j in range(0,100):
-                increment = xDist/100
-                xPoint = robot[i][0] + (j*increment)
+                xPoint = robot[i][0] + (xDist/j)
                 yPoint = (xPoint*slope) + b
                 for k in range(0,len(obstacles)):
                     if(abs(xPoint-obstacles[k][0]) < 0.2):
