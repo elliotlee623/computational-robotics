@@ -163,13 +163,13 @@ def growSimpleRRT(points):
         for j in range(0, len(newPointsList)):
             pointDist = hypot(points[i][0] - newPointsList[j][0], points[i][1] - newPointsList[j][1])
             #set distance from latest RRT point to new sample point
-            setDistance = 0.5
+            setDistance = 1.5
             xChange = (setDistance/pointDist)*(points[i][0]-newPointsList[j][0])
             yChange = (setDistance/pointDist)*(points[i][1]-newPointsList[j][1])
             newX = newPointsList[j][0] + xChange
             newY = newPointsList[j][1] + yChange
             #new point along the line from the closest RRT point to the sample point, set to a distance 0.5 units from the RRT point
-            smallPoint = (newX,newY)
+            smallPoint = (round(newX,2),round(newY,2))
             #if find a closer point
             if pointDist < minDist:
                 minDist = pointDist
