@@ -113,7 +113,10 @@ def updateALM(point1, point2, newPoints, adjListMap):
         temp2 = []
 
     temp1.append(p2)
-    # temp2.append(p1)
+    temp2.append(p1)
+
+    temp1.sort()
+    temp2.sort()
 
     adjListMap[p1] = temp1
     adjListMap[p2] = temp2
@@ -132,11 +135,6 @@ def updateALMcut(point1, point2, point3, newPoints, adjListMap):
         if point3 == newPoints[i+1]:
             p3 = i+1
 
-    tem = min(p1,p3)
-    met = max(p1,p3)
-    p1 = tem
-    p3 = met
-
     temp1 = adjListMap.get(p1, None)
     temp2 = adjListMap.get(p2, None)
     temp3 = adjListMap.get(p3, None)
@@ -148,11 +146,21 @@ def updateALMcut(point1, point2, point3, newPoints, adjListMap):
     if temp3 == None:
         temp3 = []
 
+    print p1, p2, p3
+    #linking p1 to p2
     temp1.append(p2)
-    temp1.remove(p3)
+    temp2.append(p2)
+    #linking p2 to p3
     temp2.append(p3)
+    temp3.append(p2)
 
-    # temp2.append(p1)
+    #removing old ink
+    temp1.remove(p3)
+    temp3.remove(p1)
+
+    temp1.sort()
+    temp2.sort()
+    temp3.sort()
 
     adjListMap[p1] = temp1
     adjListMap[p2] = temp2
@@ -489,25 +497,24 @@ def RRT(robot, obstacles, startPoint, goalPoint):
             randPoint = (round(x, sigFig), round(y, sigFig))
 
         #checking for closest point in the Tree newPoints
-        for i in range(1, len(points)+1):
-            pointDist = distance(randPoint, points[i])
+        for j in range(1, len(points)+1):
+            pointDist = distance(randPoint, points[j])
             #if the distance is now closer update to new nearest point
             if pointDist < minDist:
                 minDist = pointDist
-                minIndex = i
-
+                minIndex = j
         #checking against lines formed by the adjacency list, with the random Point
-        #won't enter if there's only one other point in the Tree
+        # #won't enter if there's only one other point in the Tree
         '''
         This is line intersecting checking - need to get this working
         '''
-        for i in range(1, len(tree)+1):
+        for j in range(1, len(tree)+1):
             #the adjacent vertecies
-            branch = tree[i]
+            branch = tree[j]
             # #checking the lines formed by a branch
-            for j in range(len(branch)):
-                start = points[i]
-                key = branch[j]
+            for k in range(len(branch)):
+                start = points[j]
+                key = branch[k]
                 lineDist, point = distanceToLine(start, points[key], randPoint)
                 buff = .01
 
@@ -528,7 +535,7 @@ def RRT(robot, obstacles, startPoint, goalPoint):
 
         #closest point found is on a line formed by the tree
         '''Need to check if collision'''
-        collisionFree = True
+        # collisionFree = True
         # if withLine:
         #     #number of steps along the path to check
         #     numSteps = 20
@@ -598,7 +605,7 @@ def RRT(robot, obstacles, startPoint, goalPoint):
         #             #tree has been added, we can exit out of the rrt build
         #             goalFound = True
         print "RRT"
-        print points
+        print points, len(points)
         print "\ntree"
         print tree
         if withLine:
@@ -606,6 +613,7 @@ def RRT(robot, obstacles, startPoint, goalPoint):
             points[len(points)+1] = linePoint
             #updateAlM special for removing those two from the adjListMap??
             #connecting it to both ends of the line
+            print "minIndex ", minIndex, minIndexLine
             tree = updateALMcut(points[minIndex], linePoint, points[minIndexLine], points, tree)
 
             pointToAdd = randPoint
@@ -615,10 +623,16 @@ def RRT(robot, obstacles, startPoint, goalPoint):
             #for visualization
             testLinePoints.append(linePoint)
 
+            if goalCheck:
+                goalFound = True
+
         else:
             pointToAdd = randPoint
             points[len(points)+1] = pointToAdd
             tree = updateALM(points[minIndex], pointToAdd, points, tree)
+
+            if goalCheck:
+                goalFound = True
 
 
     #find path
@@ -725,7 +739,7 @@ if __name__ == "__main__":
     displayRRTandPath(points, adjListMap, path, og_points, testLinePoints)
 
     # Solve a real RRT problem
-    RRT(robot, obstacles, (x1, y1), (x2, y2))
+    # RRT(robot, obstacles, (x1, y1), (x2, y2))
 
     # Your visualization code
-    displayRRTandPath(points, adjListMap, path, og_points, robotStart, robotGoal, obstacles)
+    # displayRRTandPath(points, adjListMap, path, og_points, robotStart, robotGoal, obstacles)
