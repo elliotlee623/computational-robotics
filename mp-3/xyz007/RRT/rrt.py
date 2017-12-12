@@ -190,6 +190,11 @@ def growSimpleRRT(points):
                         k = ((y2-y1) * (x3-x1) - (x2-x1) * (y3-y1)) / ((y2-y1)**2 + (x2-x1)**2)
                         x4 = x3 - k * (y2-y1)
                         y4 = y3 + k * (x2-x1)
+                        xChange = (setDistance/lineDist)*(points[i][0]-x4)
+                        yChange = (setDistance/lineDist)*(points[i][1]-y4)
+                        newX = x4 + xChange
+                        newY = y4 + yChange
+                        smallPoint = (round(newX,2),round(newY,2))
                         linePoint = (round(x4,4),round(y4,4))
 
         #if no line can be formed
