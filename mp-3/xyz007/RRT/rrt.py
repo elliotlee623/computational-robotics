@@ -198,7 +198,7 @@ def growSimpleRRT(points):
                         linePoint = (round(x4,4),round(y4,4))
 
         #if no line can be formed
-        if len(newPointsList) > 2:
+        if len(newPointsList) > 1:
             if withLine:
                 #connect to both end points
                 newPointsList.append(linePoint)
@@ -271,6 +271,20 @@ def displayRRTandPath(points, tree, path, robotStart = None, robotGoal = None, p
 
     ax.set_xlim(0,10)
     ax.set_ylim(0,10)
+
+    x = []
+    y = []
+    for i in range(len(points)):
+        x.append(points[i+1][0])
+        y.append(points[i+1][1])
+
+    print x,y
+    plt.scatter(x,y)
+    count = 1
+    for xy in zip(x, y):                                       
+        ax.annotate(count, xy=xy, textcoords='offset points')
+        count += 1
+    
     plt.show()
     return
 
