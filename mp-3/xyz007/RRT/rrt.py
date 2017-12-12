@@ -150,7 +150,7 @@ def growSimpleRRT(points):
 
         return num/den
 
-    print "grow simple"
+    # print "grow simple"
     newPointsList.append(points[1])
     newPoints[1] = points[1]
     # Your code goes here
@@ -224,6 +224,7 @@ def growSimpleRRT(points):
             adjListMap = updateALM(newPointsList[indexMin], smallPoint, newPoints, adjListMap)
 
     print newPoints
+    print "\n\n"
     print adjListMap
 
     return newPoints, adjListMap
@@ -259,7 +260,8 @@ def displayRRTandPath(points, tree, path, robotStart = None, robotGoal = None, p
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    for i in range(1, len(tree)+1):
+
+    for i in range(1, 5):
         branch = tree[i]
         startPoint = points[i]
         patch = createRRTPatch(branch, points, startPoint)
