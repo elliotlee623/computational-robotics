@@ -431,19 +431,19 @@ def isCollisionFree(robot, point, obstacles):
     #6 -        if collision in bounds - return false
 
     #translating the robot to the point given
-    print robot[0][0], point[0]
-    # for i in range(len(robot)):
-    #     robot[i][0] = robot[i][0] + point[0]
-    #     robot[i][1] = robot[i][1] + point[1]
-    #     #robot is out of bounds
-    #     if robot[i][0] <= 0 or robot[i][0] >=10:
-    #         return False
-    #     if robot[i][1] <= 0 or robot[i][1] >=10:
-    #         return False
+    # print robot[0][0], point[0]
+    # # for i in range(len(robot)):
+    # #     robot[i][0] = robot[i][0] + point[0]
+    # #     robot[i][1] = robot[i][1] + point[1]
+    # #     #robot is out of bounds
+    # #     if robot[i][0] <= 0 or robot[i][0] >=10:
+    # #         return False
+    # #     if robot[i][1] <= 0 or robot[i][1] >=10:
+    # #         return False
 
-    print "new robot poitns" + str(robot)
-    for i in range(len(obstacles)):
-        print "this is the number of polygons there are: " + str(i)
+    # print "new robot poitns" + str(robot)
+    # for i in range(len(obstacles)):
+    #     print "this is the number of polygons there are: " + str(i)
 
     return True
 
@@ -455,26 +455,6 @@ def RRT(robot, obstacles, startPoint, goalPoint):
     points = dict()
     tree = dict()
     path = []
-
-    # for i in range(0,len(robot)):
-    #     robot[i][0] = robot[i][0] + startPoint[0]
-    #     robot[i][1] = robot[i][1] + startPoint[1]
-
-    # for j in range(0,len(path)):
-    #     if(points[path[j]] = goalPoint):
-    #         break
-    #     if(j != len(path)-1):
-    #         pathDist = sqrt(abs((points[path[j+1]][0]-points[path[j]][0])**2 + (points[path[j+1]][0]-points[path[j]][0])**2))
-    #         for k in range(0,10):
-    #             xChange = (k/pathDist)*(points[path[j+1]][0]-points[path[j]][0])
-    #             yChange = (k/pathDist)*(points[path[j+1]][1]-points[path[j]][1])
-    #             robot[i][0] += xChange
-    #             robot[i][1] += yChange
-    #             newPoint = (robot[i][0],robot[i][1])
-    #             if(!isCollisionFree(robot,newPoint,obstacles) or robot[i][0] > 10 or robot[i][1] > 10):
-    #                 #to do: implement some sort of collission resolution.
-    #                 path[j] = path[j+1]
-
 
     # Your code goes here.
     #psuedo code - 
@@ -549,74 +529,96 @@ def RRT(robot, obstacles, startPoint, goalPoint):
         #closest point found is on a line formed by the tree
         '''Need to check if collision'''
         collisionFree = True
+        # if withLine:
+        #     #number of steps along the path to check
+        #     numSteps = 20
+        #     for i in range(1,numSteps):
+        #         #incrementing by numSteps along the line to check if collision free
+        #         stepSize = round(minDist/numSteps, sigFig)
+        #         xChange = (stepSize/minDist)*(randPoint[0]-linePoint[0])
+        #         yChange = (stepSize/minDist)*(randPoint[1]-linePoint[1])
+        #         newX = linePoint[0] + xChange
+        #         newY = linePoint[1] + yChange
+        #         pointCheck = (round(newX, sigFig),round(newY, sigFig))
+
+        #         #checking if collision free
+        #         collisionFree = isCollisionFree(robot, pointCheck, obstacles)
+
+        #         #if a collision is found
+        #         if not collisionFree:
+        #             break
+
+        #     #if no collision then add
+        #     if collisionFree:
+        #         #adding in the point on the line
+        #         points[len(points)+1] = linePoint
+        #         #updateAlM special for removing those two from the adjListMap??
+        #         #connecting it to both ends of the line
+        #         tree = updateALMcut(points[minIndex], linePoint, points[minIndexLine], points, tree)
+
+        #         pointToAdd = randPoint
+        #         points[len(points)+1] = pointToAdd
+        #         tree = updateALM(linePoint, pointToAdd, points, tree)
+
+        #         #for visualization
+        #         testLinePoints.append(linePoint)
+
+        #         #checks if the point added was the goal
+        #         if goalCheck:
+        #             #tree has been added, we can exit out of the rrt build
+        #             goalFound = True
+
+        # else:
+        #     #number of steps along the path to check
+        #     numSteps = 20
+        #     for i in range(1,numSteps):
+        #         #incrementing by numSteps along the line to check if collision free
+        #         stepSize = round(minDist/numSteps, sigFig)
+        #         xChange = (stepSize/minDist)*(randPoint[0]-points[minIndex][0])
+        #         yChange = (stepSize/minDist)*(randPoint[1]-points[minIndex][1])
+        #         newX = points[minIndex][0] + xChange
+        #         newY = points[minIndex][1] + yChange
+        #         pointCheck = (round(newX, sigFig),round(newY, sigFig))
+
+        #         #checking if collision free
+        #         collisionFree = isCollisionFree(robot, pointCheck, obstacles)
+
+        #         #if a collision is found
+        #         if not collisionFree:
+        #             break
+
+        #     #if no collision then we can add
+        #     if collisionFree:
+        #         pointToAdd = randPoint
+        #         points[len(points)+1] = pointToAdd
+        #         tree = updateALM(points[minIndex], pointToAdd, points, tree)
+
+        #         #checks if the point added was the goal
+        #         if goalCheck:
+        #             #tree has been added, we can exit out of the rrt build
+        #             goalFound = True
+        print "RRT"
+        print points
+        print "\ntree"
+        print tree
         if withLine:
-            #number of steps along the path to check
-            numSteps = 20
-            for i in range(1,numSteps):
-                #incrementing by numSteps along the line to check if collision free
-                stepSize = round(minDist/numSteps, sigFig)
-                xChange = (stepSize/minDist)*(randPoint[0]-linePoint[0])
-                yChange = (stepSize/minDist)*(randPoint[1]-linePoint[1])
-                newX = linePoint[0] + xChange
-                newY = linePoint[1] + yChange
-                pointCheck = (round(newX, sigFig),round(newY, sigFig))
+            #adding in the point on the line
+            points[len(points)+1] = linePoint
+            #updateAlM special for removing those two from the adjListMap??
+            #connecting it to both ends of the line
+            tree = updateALMcut(points[minIndex], linePoint, points[minIndexLine], points, tree)
 
-                #checking if collision free
-                collisionFree = isCollisionFree(robot, pointCheck, obstacles)
+            pointToAdd = randPoint
+            points[len(points)+1] = pointToAdd
+            tree = updateALM(linePoint, pointToAdd, points, tree)
 
-                #if a collision is found
-                if not collisionFree:
-                    break
-
-            #if no collision then add
-            if collisionFree:
-                #adding in the point on the line
-                points[len(points)+1] = linePoint
-                #updateAlM special for removing those two from the adjListMap??
-                #connecting it to both ends of the line
-                tree = updateALMcut(points[minIndex], linePoint, points[minIndexLine], points, tree)
-
-                pointToAdd = randPoint
-                points[len(points)+1] = pointToAdd
-                tree = updateALM(linePoint, pointToAdd, points, tree)
-
-                #for visualization
-                testLinePoints.append(linePoint)
-
-                #checks if the point added was the goal
-                if goalCheck:
-                    #tree has been added, we can exit out of the rrt build
-                    goalFound = True
+            #for visualization
+            testLinePoints.append(linePoint)
 
         else:
-            #number of steps along the path to check
-            numSteps = 20
-            for i in range(1,numSteps):
-                #incrementing by numSteps along the line to check if collision free
-                stepSize = round(minDist/numSteps, sigFig)
-                xChange = (stepSize/minDist)*(randPoint[0]-points[minIndex][0])
-                yChange = (stepSize/minDist)*(randPoint[1]-points[minIndex][1])
-                newX = points[minIndex][0] + xChange
-                newY = points[minIndex][1] + yChange
-                pointCheck = (round(newX, sigFig),round(newY, sigFig))
-
-                #checking if collision free
-                collisionFree = isCollisionFree(robot, pointCheck, obstacles)
-
-                #if a collision is found
-                if not collisionFree:
-                    break
-
-            #if no collision then we can add
-            if collisionFree:
-                pointToAdd = randPoint
-                points[len(points)+1] = pointToAdd
-                tree = updateALM(points[minIndex], pointToAdd, points, tree)
-
-                #checks if the point added was the goal
-                if goalCheck:
-                    #tree has been added, we can exit out of the rrt build
-                    goalFound = True
+            pointToAdd = randPoint
+            points[len(points)+1] = pointToAdd
+            tree = updateALM(points[minIndex], pointToAdd, points, tree)
 
 
     #find path
