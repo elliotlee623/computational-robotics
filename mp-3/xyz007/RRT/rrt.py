@@ -254,10 +254,10 @@ def growSimpleRRT(points):
                 buff = .01
                 # if i == 9 or i == 17 or i == 10 or i == 14:
                 if i == 14:
-                    print "keys are: " + str(j) + " " + str(key)
-                    print "this is minDist for: " + str(i) + " " + str(minDist)
-                    temp, hold = distanceToLine(start, newPoints[key], points[i])
-                    print "this is lineDIst: " + str(temp)
+                    # print "keys are: " + str(j) + " " + str(key)
+                    # print "this is minDist for: " + str(i) + " " + str(minDist)
+                    # temp, hold = distanceToLine(start, newPoints[key], points[i])
+                    # print "this is lineDIst: " + str(temp)
 
                 #if the lineDist is smal
                 if minDist - lineDist > buff and lineDist != 0:
@@ -269,7 +269,7 @@ def growSimpleRRT(points):
                     if left < point[0] and point[0] < right:
                         # print point
                         withLine = True
-                        print "mindist UPDATED " + str(j) + " " + str(k)
+                        # print "mindist UPDATED " + str(j) + " " + str(k)
                         minDist = lineDist
 
             #         # print "x4, y4 is: " + str(x4) + " " + str(y4)
