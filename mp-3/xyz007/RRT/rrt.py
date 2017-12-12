@@ -42,23 +42,24 @@ def createPolygonPatch(polygon, color):
 
     return patch
 
-# def createPathPatch(path, color):
-#     verts = []
-#     codes= []
-#     for v in range(0, len(path)):
-#         xy = points[path[v]]
-#         verts.append(xy)
-#         if v == 0:
-#             codes.append(Path.MOVETO)
-#         else:
-#             codes.append(Path.LINETO)
-#     verts.append(verts[0])
-#     path = Path(verts, codes)
-#     patch = patches.PathPatch(path, facecolor=color, lw=1)
+def createPathPatch(path, points, color):
+    verts = [points[path[0]]]
+    codes= [Path.MOVETO]
 
-#     return patch
+    for i in range(len(path)):
+        key = path[i] 
+        point = points[key]
+        verts.append(point)
+        codes.append(Path.LINETO)
+        # verts.append(point)
+        # codes.append(Path.MOVETO)
 
-def createRRTPatch(branch, points, startPoint):
+    path = Path(verts, codes)
+    patch = patches.PathPatch(path, facecolor='None', edgecolor=color, lw=3)
+
+    return patch
+
+def createRRTPatch(branch, points, startPoint, color):
     verts = [startPoint]
     codes = [Path.MOVETO]
 
@@ -71,7 +72,8 @@ def createRRTPatch(branch, points, startPoint):
         codes.append(Path.MOVETO)
 
     path = Path(verts, codes)
-    patch = patches.PathPatch(path, facecolor='black', lw=1)
+    patch = patches.PathPatch(path, facecolor='None', edgecolor=color, lw=1)
+
     return patch
 
 
@@ -263,13 +265,6 @@ def growSimpleRRT(points):
 
         #reaching end here will have closest possible point
 
-    #PSEUDO CODE
-        #1 - Add first point
-        #loop - 
-            #2 - find closest point
-            #3 - compare distance to closest line formed
-            #4 - add new point - along line to new point by stepsize
-
     # print newPoints
     # print "\n"
     print "adjListmap is: "
@@ -288,19 +283,23 @@ def basicSearch(tree, start, goal):
 
     while len(queue)>0:
         path = queue.pop(0)
+        # print path
 
         vertex = path[len(path)-1]
 
         if vertex == goal:
-            print "this is path from " + str(start) + " to " + str(goal)
-            print path
+            print "\nthis is path from " + str(start) + " to " + str(goal) + ": " + str(path) + "\n"
             return path
 
         elif visited.get(vertex, None) == None:
+            # print vertex
+            # print tree[vertex][0]
             for i in range(len(tree[vertex])):
-                new_path = path
+                new_path = list(path)
                 new_path.append(tree[vertex][i])
+                # print new_path
                 queue.append(new_path)
+                # print queue
 
             visited[vertex] = True
 
@@ -323,12 +322,14 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
     for i in range(1, len(tree)+1):
         branch = tree[i]
         startPoint = points[i]
-        patch = createRRTPatch(branch, points, startPoint)
+        patch = createRRTPatch(branch, points, startPoint, 'black')
         ax.add_patch(patch)
 
     ax.set_xlim(0,10)
     ax.set_ylim(0,10)
 
+
+    #shows the points in newPoints
     x = []
     y = []
     for i in range(len(points)):
@@ -338,8 +339,13 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
     plt.scatter(x,y, edgecolors='green')
     count = 1
     for xy in zip(x, y):                                       
-        ax.annotate(count, xy=xy, textcoords='offset points')
+        ax.annotate(count, xy=xy, xytext=(5,5), textcoords='offset points')
         count += 1
+
+
+    #shows the path
+    patch = createPathPatch(path, points, 'orange')
+    ax.add_patch(patch)
 
     ''' used for seeing original poitns, remove later'''
     x1 = []
@@ -351,7 +357,7 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
     plt.scatter(x1,y1, edgecolors='yellow')
     count = 2
     for xy in zip(x1, y1):                                       
-        ax.annotate(count, xy=xy, textcoords='offset points')
+        ax.annotate(count, xy=xy, xytext=(5,5), textcoords='offset points')
         count += 1
 
     x2 = []
