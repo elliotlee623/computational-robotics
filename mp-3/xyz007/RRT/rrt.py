@@ -379,10 +379,10 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
         y.append(points[i+1][1])
 
     plt.scatter(x,y, edgecolors='black', facecolor='black', s=10)
-    # count = 1
-    # for xy in zip(x, y):                                       
-    #     ax.annotate(count, xy=xy, xytext=(5,5), textcoords='offset points')
-    #     count += 1
+    count = 1
+    for xy in zip(x, y):                                       
+        ax.annotate(count, xy=xy, xytext=(3,3), textcoords='offset points')
+        count += 1
 
 
     #shows the path
@@ -397,10 +397,10 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
         y1.append(og_points[i+1][1])
 
     plt.scatter(x1,y1, edgecolors='yellow', facecolor='green', s=20)
-    count = 2
-    for xy in zip(x1, y1):                                       
-        ax.annotate(count, xy=xy, xytext=(-2,-2), textcoords='offset points')
-        count += 1
+    # count = 2
+    # for xy in zip(x1, y1):                                       
+    #     ax.annotate(count, xy=xy, xytext=(-2,-2), textcoords='offset points')
+    #     count += 1
 
     x2 = []
     y2 = []
