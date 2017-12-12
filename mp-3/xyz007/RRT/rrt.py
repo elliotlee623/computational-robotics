@@ -162,8 +162,40 @@ def updateALMcut(point1, point2, point3, newPoints, adjListMap):
 
     return adjListMap
 
+'''Used for RRT - finds distance between two points'''
+def distance(point1, point2):
+        dist = sqrt(abs((point2[0]-point1[0])**2 + (point2[1]-point1[1])**2))
+        return round(dist,8)
 
+'''Used for finding perp distance to line'''
+#returns distance and point perpendicular
+#p1 and p2 form line, p3 is point we are tring to find perpendicular to line
+def distanceToLine(p1, p2, p3):
+    #perpendicular code here
+    x1 = p1[0]
+    y1 = p1[1]
+    x2 = p2[0]
+    y2 = p2[1]
+    x3 = p3[0]
+    y3 = p3[1]
 
+    x1 = float(x1)
+    y1 = float(y1)
+    x2 = float(x2)
+    y2 = float(y2)
+    x3 = float(x3)
+    y3 = float(y3)
+    k = ((y2-y1) * (x3-x1) - (x2-x1) * (y3-y1)) / ((y2-y1)**2 + (x2-x1)**2)
+    x4 = x3 - k * (y2-y1)
+    y4 = y3 + k * (x2-x1)
+
+    #calculating line distance
+    p1 = np.array(p1)
+    p2 = np.array(p2)
+    p3 = np.array(p3)
+    d = np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1)
+
+    return d, (x4,y4)
 
 '''
 Grow a simple RRT
@@ -173,53 +205,6 @@ def growSimpleRRT(points):
     adjListMap = dict()
 
     testLinePoints = []
-    #calculating distance between two poitns
-    def distance(point1, point2):
-        dist = sqrt(abs((point2[0]-point1[0])**2 + (point2[1]-point1[1])**2))
-        return round(dist,8)
-
-    #p1 and p2 form line, p3 is point we are tring to find perpendicular to line
-    def distanceToLine(p1, p2, p3):
-        # length = distance(p1, p2)
-        # t = ((p3[0] - p1[0]) * (p2[0] - p1[0]) + (p3[1] - p1[1]) * (p2[1] - p1[1])) / length
-        # t = max(0, min(1,t))
-        # x = p1[0] + t * (p2[0] - p1[0])
-        # y = p1[1] + t * (p2[1] - p1[1])
-
-        # x_diff = p2[0] - p1[0]
-        # y_diff = p2[1] - p1[1]
-        # x_diff = round(x_diff, 8)
-        # y_diff = round(y_diff, 8)
-        # num = abs(y_diff*p3[0] - x_diff*p3[1] + p2[0]*p1[1] - p2[1]*p1[0])
-        # den = sqrt(y_diff**2 + x_diff**2)
-
-        #perpendicular code here
-        x1 = p1[0]
-        y1 = p1[1]
-        x2 = p2[0]
-        y2 = p2[1]
-        x3 = p3[0]
-        y3 = p3[1]
-
-        x1 = float(x1)
-        y1 = float(y1)
-        x2 = float(x2)
-        y2 = float(y2)
-        x3 = float(x3)
-        y3 = float(y3)
-        k = ((y2-y1) * (x3-x1) - (x2-x1) * (y3-y1)) / ((y2-y1)**2 + (x2-x1)**2)
-        x4 = x3 - k * (y2-y1)
-        y4 = y3 + k * (x2-x1)
-
-        #calculating line distance
-        p1 = np.array(p1)
-        p2 = np.array(p2)
-        p3 = np.array(p3)
-        d = np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1)
-
-        return d, (x4,y4)
-
-    stepSize = 1
     
     #putting in the start node
     newPoints[1] = points[1]
@@ -245,39 +230,24 @@ def growSimpleRRT(points):
         for j in range(1, len(adjListMap)+1):
             #the adjacent vertecies
             branch = adjListMap[j]
-            # print "Current point is: " + str(i) + " branch checking is: " + str(j) + " which is: " + str(branch)
             # #checking the lines formed by a branch
             for k in range(len(branch)):
                 start = newPoints[j]
                 key = branch[k]
                 lineDist, point = distanceToLine(start, newPoints[key], points[i])
                 buff = .01
-                # if i == 9 or i == 17 or i == 10 or i == 14:
-                # if i == 14:
-                    # print "keys are: " + str(j) + " " + str(key)
-                    # print "this is minDist for: " + str(i) + " " + str(minDist)
-                    # temp, hold = distanceToLine(start, newPoints[key], points[i])
-                    # print "this is lineDIst: " + str(temp)
 
-                #if the lineDist is smal
+                #if the lineDist is smaller than the buffer
                 if minDist - lineDist > buff and lineDist != 0:
-                    # print "reached", start, point, newPoints[key]
                     #checking to make sure its on the relevant parts of the line
                     left = min(start[0], newPoints[key][0])
                     right = max(start[0], newPoints[key][0])
 
                     if left < point[0] and point[0] < right:
-                        # print point
                         withLine = True
-                        # print "mindist UPDATED " + str(j) + " " + str(k)
                         minDist = lineDist
 
-            #         # print "x4, y4 is: " + str(x4) + " " + str(y4)
-            #         #finding a point stepSize distance way on the line
-
                         linePoint = point
-            #         # print "linePoint"
-            #         # print linePoint
                         minIndex = j
                         minIndexLine = key
 
@@ -304,10 +274,9 @@ def growSimpleRRT(points):
 
         #reaching end here will have closest possible point
 
-    print newPoints
-    # print "\n"
-    print "adjListmap is: "
-    print adjListMap
+    # print newPoints
+    # print "adjListmap is: "
+    # print adjListMap
 
     #testLinePoints is not one of the given ones
     return newPoints, adjListMap, testLinePoints
@@ -422,35 +391,60 @@ def isCollisionFree(robot, point, obstacles):
 
     # Your code goes here.
 
-    for i in range(0,len(robot)):
-        robot[i][0] = robot[i][0] + point[0]
-        robot[i][1] = robot[i][1] + point[1]
-    if(robot[i][0] >= 10 or robot[i][1] >= 10):
-        return False
+    # for i in range(0,len(robot)):
+    #     robot[i][0] = robot[i][0] + point[0]
+    #     robot[i][1] = robot[i][1] + point[1]
+    # if(robot[i][0] >= 10 or robot[i][1] >= 10):
+    #     return False
 
-    for i in range(0,len(robot)):
-        if(i != len(robot)-1):
-            slope =(robot[i+1][1]-robot[i][1])/(robot[i+1][0]-robot[i][0])
-            b = robot[i][1] - (robot[i][0]*slope)
-            xDist = robot[i+1][0] - robot[i][0]
-            for j in range(0,100):
-                increment = xDist/100
-                xPoint = robot[i][0] + (j*increment)
-                yPoint = (xPoint*slope) + b
-                for k in range(0,len(obstacles)):
-                    if(abs(xPoint-obstacles[k][0]) < 0.2):
-                        if(abs(yPoint-obstacles[k][1]) < 0.2):
-                            return False
-        slope = (robot[0][1] - robot[i+1][1])/(robot[0][0]-robot[i+1][0])
-        b = robot[i+1][1] - (robot[i+1][0]*slope)
-        xDist = robot[i+1][0] - robot[i][0]
-        for j in range(0,10):
-            xPoint = robot[i][0] + (xDist/j)
-            yPoint = (xPoint*slope) + b
-            for k in range(0,len(obstacles)):
-                if(abs(xPoint-obstacles[k][0]) < 0.2):
-                    if(abs(yPoint-obstacles[k][1]) < 0.2):
-                        return False
+    # for i in range(0,len(robot)):
+    #     if(i != len(robot)-1):
+    #         slope =(robot[i+1][1]-robot[i][1])/(robot[i+1][0]-robot[i][0])
+    #         b = robot[i][1] - (robot[i][0]*slope)
+    #         xDist = robot[i+1][0] - robot[i][0]
+    #         for j in range(0,100):
+    #             increment = xDist/100
+    #             xPoint = robot[i][0] + (j*increment)
+    #             yPoint = (xPoint*slope) + b
+    #             for k in range(0,len(obstacles)):
+    #                 if(abs(xPoint-obstacles[k][0]) < 0.2):
+    #                     if(abs(yPoint-obstacles[k][1]) < 0.2):
+    #                         return False
+    #     slope = (robot[0][1] - robot[i+1][1])/(robot[0][0]-robot[i+1][0])
+    #     b = robot[i+1][1] - (robot[i+1][0]*slope)
+    #     xDist = robot[i+1][0] - robot[i][0]
+    #     for j in range(0,10):
+    #         xPoint = robot[i][0] + (xDist/j)
+    #         yPoint = (xPoint*slope) + b
+    #         for k in range(0,len(obstacles)):
+    #             if(abs(xPoint-obstacles[k][0]) < 0.2):
+    #                 if(abs(yPoint-obstacles[k][1]) < 0.2):
+    #                     return False
+
+    #pseudo code
+    #1 - transalte robot to this new point
+    #2 - for each polygon
+    #3 -    each line in polygon
+    #4 -    for each side of the robot:
+    #5          check if it collides 
+    #               specified by intersection and left bound right bound of robot, and of point found
+    #6 -        if collision in bounds - return false
+
+    #translating the robot to the point given
+    print robot[0][0], point[0]
+    # for i in range(len(robot)):
+    #     robot[i][0] = robot[i][0] + point[0]
+    #     robot[i][1] = robot[i][1] + point[1]
+    #     #robot is out of bounds
+    #     if robot[i][0] <= 0 or robot[i][0] >=10:
+    #         return False
+    #     if robot[i][1] <= 0 or robot[i][1] >=10:
+    #         return False
+
+    print "new robot poitns" + str(robot)
+    for i in range(len(obstacles)):
+        print "this is the number of polygons there are: " + str(i)
+
     return True
 
 '''
@@ -482,27 +476,156 @@ def RRT(robot, obstacles, startPoint, goalPoint):
     #                 path[j] = path[j+1]
 
 
-
     # Your code goes here.
+    #psuedo code - 
+    #1 - start first point
+    #2 - RRT stuff
+    #3 - find closest point (including linepoint)
+    #4 - check if collision
+    #5 if no collision, add, otherwise new sample
+    ##6 - after ten or so runs check goal 
 
-    x = startPoint[0]
-    y = startPoint[1]
+    #inserting starting point
+    points[1] = startPoint
+    goalFound = False
+    checkEvery = 10
+    sigFig = 4
 
+    #RRT stuff starts here
+    while not goalFound:
+        minDist = 10*sqrt(2)
+        minIndex = -1
+        minIndexLine = -1
+        withLine = False
+        goalCheck = False
 
-    #initializing points and decimal points for points
-    sigFig = 2
-    points[1] =  startPoint
-
-    #creating sample points - number squared
-    for i in range(20):
-        for j in range(20):
+        #determining new point to check - 
+        if len(points)%checkEvery == 0:
+            randPoint = goalPoint
+            goalCheck = True
+        else:
             x = np.random.uniform(0,10)
             y = np.random.uniform(0,10)
-            points[len(points)+1] = (round(x,sigFig),round(y,sigFig))
+            randPoint = (round(x, sigFig), round(y, sigFig))
 
-    #modified RRT
+        #checking for closest point in the Tree newPoints
+        for i in range(1, len(points)+1):
+            pointDist = distance(randPoint, points[i])
+            #if the distance is now closer update to new nearest point
+            if pointDist < minDist:
+                minDist = pointDist
+                minIndex = i
+
+        #checking against lines formed by the adjacency list, with the random Point
+        #won't enter if there's only one other point in the Tree
+        '''
+        This is line intersecting checking - need to get this working
+        '''
+        for i in range(1, len(tree)+1):
+            #the adjacent vertecies
+            branch = tree[i]
+            # #checking the lines formed by a branch
+            for j in range(len(branch)):
+                start = points[i]
+                key = branch[j]
+                lineDist, point = distanceToLine(start, points[key], randPoint)
+                buff = .01
+
+                #if the lineDist is smaller than the buffer
+                if minDist - lineDist > buff and lineDist != 0:
+                    #checking to make sure its on the relevant parts of the line
+                    left = min(start[0], points[key][0])
+                    right = max(start[0], points[key][0])
+
+                    if left < randPoint[0] and randPoint[0] < right:
+                        withLine = True
+                        minDist = lineDist
+
+                        linePoint = point
+                        minIndex = j
+                        minIndexLine = key
+
+
+        #closest point found is on a line formed by the tree
+        '''Need to check if collision'''
+        collisionFree = True
+        if withLine:
+            #number of steps along the path to check
+            numSteps = 20
+            for i in range(1,numSteps):
+                #incrementing by numSteps along the line to check if collision free
+                stepSize = round(minDist/numSteps, sigFig)
+                xChange = (stepSize/minDist)*(randPoint[0]-linePoint[0])
+                yChange = (stepSize/minDist)*(randPoint[1]-linePoint[1])
+                newX = linePoint[0] + xChange
+                newY = linePoint[1] + yChange
+                pointCheck = (round(newX, sigFig),round(newY, sigFig))
+
+                #checking if collision free
+                collisionFree = isCollisionFree(robot, pointCheck, obstacles)
+
+                #if a collision is found
+                if not collisionFree:
+                    break
+
+            #if no collision then add
+            if collisionFree:
+                #adding in the point on the line
+                points[len(points)+1] = linePoint
+                #updateAlM special for removing those two from the adjListMap??
+                #connecting it to both ends of the line
+                tree = updateALMcut(points[minIndex], linePoint, points[minIndexLine], points, tree)
+
+                pointToAdd = randPoint
+                points[len(points)+1] = pointToAdd
+                tree = updateALM(linePoint, pointToAdd, points, tree)
+
+                #for visualization
+                testLinePoints.append(linePoint)
+
+                #checks if the point added was the goal
+                if goalCheck:
+                    #tree has been added, we can exit out of the rrt build
+                    goalFound = True
+
+        else:
+            #number of steps along the path to check
+            numSteps = 20
+            for i in range(1,numSteps):
+                #incrementing by numSteps along the line to check if collision free
+                stepSize = round(minDist/numSteps, sigFig)
+                xChange = (stepSize/minDist)*(randPoint[0]-points[minIndex][0])
+                yChange = (stepSize/minDist)*(randPoint[1]-points[minIndex][1])
+                newX = points[minIndex][0] + xChange
+                newY = points[minIndex][1] + yChange
+                pointCheck = (round(newX, sigFig),round(newY, sigFig))
+
+                #checking if collision free
+                collisionFree = isCollisionFree(robot, pointCheck, obstacles)
+
+                #if a collision is found
+                if not collisionFree:
+                    break
+
+            #if no collision then we can add
+            if collisionFree:
+                pointToAdd = randPoint
+                points[len(points)+1] = pointToAdd
+                tree = updateALM(points[minIndex], pointToAdd, points, tree)
+
+                #checks if the point added was the goal
+                if goalCheck:
+                    #tree has been added, we can exit out of the rrt build
+                    goalFound = True
+
+
+    #find path
+    path = basicSearch(tree, startPoint, goalPoint)
 
     # print points
+    # print tree
+    # print path
+    return points, tree, path
 
 
     points 
