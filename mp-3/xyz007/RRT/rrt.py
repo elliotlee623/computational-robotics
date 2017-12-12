@@ -99,10 +99,10 @@ def updateALM(point1, point2, vertexMap, adjacencyListMap):
     # def distance(point1, point2):
     #     dist = sqrt((point2[0]-point1[0])**2 + (point2[1]-point1[1])**2)
     #     return round(dist,3)
-
     #finding indexes for the two points
     for i in range(len(vertexMap)):
         if point1 == vertexMap.get(i+1):
+            # found = True
             p1 = i+1
 
     p2 = len(vertexMap)
@@ -115,18 +115,15 @@ def updateALM(point1, point2, vertexMap, adjacencyListMap):
         temp2 = []
 
     #updating lists for ALM
-    add = True
-    for i in range(len(temp1)):
-        if temp1[i] == [p2]:
-            add = False
-            break
-    if add:
-        temp1.append(p2)
-        temp2.append(p1)
+    temp1.append(p2)
+    temp2.append(p1)
     #updating ALM
     adjacencyListMap[p1] = temp1
     adjacencyListMap[p2] = temp2
+    
     return adjacencyListMap
+
+
 
 '''
 Grow a simple RRT
@@ -261,7 +258,7 @@ def displayRRTandPath(points, tree, path, robotStart = None, robotGoal = None, p
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    for i in range(1, 5):
+    for i in range(1, 4):
         branch = tree[i]
         startPoint = points[i]
         patch = createRRTPatch(branch, points, startPoint)
