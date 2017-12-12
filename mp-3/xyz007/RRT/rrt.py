@@ -115,8 +115,8 @@ def updateALM(point1, point2, newPoints, adjListMap):
     temp1.append(p2)
     temp2.append(p1)
 
-    temp1.sort()
-    temp2.sort()
+    # temp1.sort()
+    # temp2.sort()
 
     adjListMap[p1] = temp1
     adjListMap[p2] = temp2
@@ -146,10 +146,9 @@ def updateALMcut(point1, point2, point3, newPoints, adjListMap):
     if temp3 == None:
         temp3 = []
 
-    print p1, p2, p3
     #linking p1 to p2
     temp1.append(p2)
-    temp2.append(p2)
+    temp2.append(p1)
     #linking p2 to p3
     temp2.append(p3)
     temp3.append(p2)
@@ -158,9 +157,9 @@ def updateALMcut(point1, point2, point3, newPoints, adjListMap):
     temp1.remove(p3)
     temp3.remove(p1)
 
-    temp1.sort()
-    temp2.sort()
-    temp3.sort()
+    # temp1.sort()
+    # temp2.sort()
+    # temp3.sort()
 
     adjListMap[p1] = temp1
     adjListMap[p2] = temp2
@@ -242,22 +241,23 @@ def growSimpleRRT(points):
             for k in range(len(branch)):
                 start = newPoints[j]
                 key = branch[k]
-                lineDist, point = distanceToLine(start, newPoints[key], points[i])
-                buff = .01
+                if start != newPoints[key]:
+                    lineDist, point = distanceToLine(start, newPoints[key], points[i])
+                    buff = .01
 
-                #if the lineDist is smaller than the buffer
-                if minDist - lineDist > buff and lineDist != 0:
-                    #checking to make sure its on the relevant parts of the line
-                    left = min(start[0], newPoints[key][0])
-                    right = max(start[0], newPoints[key][0])
+                    #if the lineDist is smaller than the buffer
+                    if minDist - lineDist > buff and lineDist != 0:
+                        #checking to make sure its on the relevant parts of the line
+                        left = min(start[0], newPoints[key][0])
+                        right = max(start[0], newPoints[key][0])
 
-                    if left < point[0] and point[0] < right:
-                        withLine = True
-                        minDist = lineDist
+                        if left < point[0] and point[0] < right:
+                            withLine = True
+                            minDist = lineDist
 
-                        linePoint = point
-                        minIndex = j
-                        minIndexLine = key
+                            linePoint = point
+                            minIndex = j
+                            minIndexLine = key
 
 
         #closest point found is on a line formed by the tree
@@ -739,7 +739,7 @@ if __name__ == "__main__":
     displayRRTandPath(points, adjListMap, path, og_points, testLinePoints)
 
     # Solve a real RRT problem
-    # RRT(robot, obstacles, (x1, y1), (x2, y2))
+    RRT(robot, obstacles, (x1, y1), (x2, y2))
 
     # Your visualization code
-    # displayRRTandPath(points, adjListMap, path, og_points, robotStart, robotGoal, obstacles)
+    displayRRTandPath(points, adjListMap, path, og_points, robotStart, robotGoal, obstacles)
