@@ -55,7 +55,7 @@ def createPathPatch(path, points, color):
         # codes.append(Path.MOVETO)
 
     path = Path(verts, codes)
-    patch = patches.PathPatch(path, facecolor='None', edgecolor=color, lw=3)
+    patch = patches.PathPatch(path, facecolor='None', edgecolor=color, lw=2)
 
     return patch
 
@@ -122,6 +122,47 @@ def updateALM(point1, point2, newPoints, adjListMap):
 
     return adjListMap
 
+def updateALMcut(point1, point2, point3, newPoints, adjListMap):
+    #finding the existing adjacent vertices
+    for i in range(len(newPoints)):
+        if point1 == newPoints[i+1]:
+            p1 = i+1
+        if point2 == newPoints[i+1]:
+            p2 = i+1
+        if point3 == newPoints[i+1]:
+            p3 = i+1
+
+    tem = min(p1,p3)
+    met = max(p1,p3)
+    p1 = tem
+    p3 = met
+
+    temp1 = adjListMap.get(p1, None)
+    temp2 = adjListMap.get(p2, None)
+    temp3 = adjListMap.get(p3, None)
+
+    if temp1 == None:
+        temp1 = []
+    if temp2 == None:
+        temp2 = []
+    if temp3 == None:
+        temp3 = []
+
+    temp1.append(p2)
+    temp1.remove(p3)
+    temp2.append(p3)
+
+    # temp2.append(p1)
+
+    adjListMap[p1] = temp1
+    adjListMap[p2] = temp2
+    adjListMap[p3] = temp3
+
+    # print "AdjListMap " + str(point1) + " " + str(point2)
+
+    return adjListMap
+
+
 
 
 '''
@@ -139,11 +180,18 @@ def growSimpleRRT(points):
 
     #p1 and p2 form line, p3 is point we are tring to find perpendicular to line
     def distanceToLine(p1, p2, p3):
-        length = distance(p1, p2)
-        t = ((p3[0] - p1[0]) * (p2[0] - p1[0]) + (p3[1] - p1[1]) * (p2[1] - p1[1])) / length
-        t = max(0, min(1,t))
-        x = p1[0] + t * (p2[0] - p1[0])
-        y = p1[1] + t * (p2[1] - p1[1])
+        # length = distance(p1, p2)
+        # t = ((p3[0] - p1[0]) * (p2[0] - p1[0]) + (p3[1] - p1[1]) * (p2[1] - p1[1])) / length
+        # t = max(0, min(1,t))
+        # x = p1[0] + t * (p2[0] - p1[0])
+        # y = p1[1] + t * (p2[1] - p1[1])
+
+        # x_diff = p2[0] - p1[0]
+        # y_diff = p2[1] - p1[1]
+        # x_diff = round(x_diff, 8)
+        # y_diff = round(y_diff, 8)
+        # num = abs(y_diff*p3[0] - x_diff*p3[1] + p2[0]*p1[1] - p2[1]*p1[0])
+        # den = sqrt(y_diff**2 + x_diff**2)
 
         #perpendicular code here
         x1 = p1[0]
@@ -163,17 +211,13 @@ def growSimpleRRT(points):
         x4 = x3 - k * (y2-y1)
         y4 = y3 + k * (x2-x1)
 
-        #own solve
-        # t=[(Cx-Ax)(Bx-Ax)+(Cy-Ay)(By-Ay)]/[(Bx-Ax)^2+(By-Ay)^2]
-        # t = ((x3-x1)*(x2-x1)+(y3-y1)*(y2-y1))/((x2-x1)**2+(y2-y1)**2)
-        # t = float(t)
-        # # Dx=Ax+t(Bx-Ax)
-        # # Dy=Ay+t(By-Ay)
-        # x4 = x1 + t*(x2-x1)
-        # y4 = y1 + t*(y2-y1)
-        # x4 = float(x4)
-        # y4 = float(y4) 
-        return distance(p3, (x,y)), (x4,y4) 
+        #calculating line distance
+        p1 = np.array(p1)
+        p2 = np.array(p2)
+        p3 = np.array(p3)
+        d = np.linalg.norm(np.cross(p2-p1, p1-p3))/np.linalg.norm(p2-p1)
+
+        return d, (x4,y4)
 
     stepSize = 1
     
@@ -208,6 +252,12 @@ def growSimpleRRT(points):
                 key = branch[k]
                 lineDist, point = distanceToLine(start, newPoints[key], points[i])
                 buff = .01
+                # if i == 9 or i == 17 or i == 10 or i == 14:
+                if i == 14:
+                    print "keys are: " + str(j) + " " + str(key)
+                    print "this is minDist for: " + str(i) + " " + str(minDist)
+                    temp, hold = distanceToLine(start, newPoints[key], points[i])
+                    print "this is lineDIst: " + str(temp)
 
                 #if the lineDist is smal
                 if minDist - lineDist > buff and lineDist != 0:
@@ -219,6 +269,7 @@ def growSimpleRRT(points):
                     if left < point[0] and point[0] < right:
                         # print point
                         withLine = True
+                        print "mindist UPDATED " + str(j) + " " + str(k)
                         minDist = lineDist
 
             #         # print "x4, y4 is: " + str(x4) + " " + str(y4)
@@ -237,15 +288,9 @@ def growSimpleRRT(points):
             newPoints[len(newPoints)+1] = linePoint
             #updateAlM special for removing those two from the adjListMap??
             #connecting it to both ends of the line
-            adjListMap = updateALM(newPoints[minIndex], linePoint, newPoints, adjListMap)
-            adjListMap = updateALM(newPoints[minIndexLine], linePoint, newPoints, adjListMap)
+            adjListMap = updateALMcut(newPoints[minIndex], linePoint, newPoints[minIndexLine], newPoints, adjListMap)
 
-            #updating with newest point
-            xChange = (stepSize/minDist)*(points[i][0]-linePoint[0])
-            yChange = (stepSize/minDist)*(points[i][1]-linePoint[1])
-            newX = linePoint[0] + xChange
-            newY = linePoint[1] + yChange
-            pointToAdd = (round(newX,2),round(newY,2))
+            pointToAdd = points[i]
             newPoints[len(newPoints)+1] = pointToAdd
             adjListMap = updateALM(linePoint, pointToAdd, newPoints, adjListMap)
 
@@ -253,19 +298,13 @@ def growSimpleRRT(points):
             testLinePoints.append(linePoint)
 
         else:
-            #closest point found is separate point, need to move it by stepSize
-            xChange = (stepSize/minDist)*(points[i][0]-newPoints[minIndex][0])
-            yChange = (stepSize/minDist)*(points[i][1]-newPoints[minIndex][1])
-            newX = newPoints[minIndex][0] + xChange
-            newY = newPoints[minIndex][1] + yChange
-            pointToAdd = (round(newX,2),round(newY,2))
-
+            pointToAdd = points[i]
             newPoints[len(newPoints)+1] = pointToAdd
             adjListMap = updateALM(newPoints[minIndex], pointToAdd, newPoints, adjListMap)
 
         #reaching end here will have closest possible point
 
-    # print newPoints
+    print newPoints
     # print "\n"
     print "adjListmap is: "
     print adjListMap
@@ -327,6 +366,9 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
 
     ax.set_xlim(0,10)
     ax.set_ylim(0,10)
+    x0,x1 = ax.get_xlim()
+    y0,y1 = ax.get_ylim()
+    ax.set_aspect(abs(x1-x0)/abs(y1-y0))
 
 
     #shows the points in newPoints
@@ -336,11 +378,11 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
         x.append(points[i+1][0])
         y.append(points[i+1][1])
 
-    plt.scatter(x,y, edgecolors='green')
-    count = 1
-    for xy in zip(x, y):                                       
-        ax.annotate(count, xy=xy, xytext=(5,5), textcoords='offset points')
-        count += 1
+    plt.scatter(x,y, edgecolors='black', facecolor='black', s=10)
+    # count = 1
+    # for xy in zip(x, y):                                       
+    #     ax.annotate(count, xy=xy, xytext=(5,5), textcoords='offset points')
+    #     count += 1
 
 
     #shows the path
@@ -354,10 +396,10 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
         x1.append(og_points[i+1][0])
         y1.append(og_points[i+1][1])
 
-    plt.scatter(x1,y1, edgecolors='yellow')
+    plt.scatter(x1,y1, edgecolors='yellow', facecolor='green', s=20)
     count = 2
     for xy in zip(x1, y1):                                       
-        ax.annotate(count, xy=xy, xytext=(5,5), textcoords='offset points')
+        ax.annotate(count, xy=xy, xytext=(-2,-2), textcoords='offset points')
         count += 1
 
     x2 = []
@@ -367,7 +409,7 @@ def displayRRTandPath(points, tree, path, og_points, testLinePoints, robotStart 
         x2.append(testLinePoints[i][0])
         y2.append(testLinePoints[i][1])
 
-    plt.scatter(x2,y2, edgecolors='red')
+    plt.scatter(x2,y2, edgecolors='red', s=25)
     '''remove til here'''
     
     plt.show()
@@ -418,10 +460,28 @@ def RRT(robot, obstacles, startPoint, goalPoint):
     points = dict()
     tree = dict()
     path = []
-    # Your code goes here.
 
-    return points, tree, path
+    x = startPoint[0]
+    y = startPoint[1]
 
+
+    #initializing points and decimal points for points
+    sigFig = 2
+    points[1] =  startPoint
+
+    #creating sample points - number squared
+    for i in range(20):
+        for j in range(20):
+            x = np.random.uniform(0,10)
+            y = np.random.uniform(0,10)
+            points[len(points)+1] = (round(x,sigFig),round(y,sigFig))
+
+    #modified RRT
+
+    # print points
+
+
+    points 
 if __name__ == "__main__":
 
     # Retrive file name for input data
@@ -519,4 +579,4 @@ if __name__ == "__main__":
     RRT(robot, obstacles, (x1, y1), (x2, y2))
 
     # Your visualization code
-    # displayRRTandPath(points, adjListMap, path, og_points, robotStart, robotGoal, obstacles)
+    displayRRTandPath(points, adjListMap, path, og_points, robotStart, robotGoal, obstacles)
