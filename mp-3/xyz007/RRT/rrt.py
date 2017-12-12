@@ -385,6 +385,7 @@ def isCollisionFree(robot, point, obstacles):
         robot[i][1] = robot[i][1] + point[1]
     if(robot[i][0] >= 10 or robot[i][1] >= 10):
         return False
+
     for i in range(0,len(robot)):
         if(i != len(robot)-1):
             slope =(robot[i+1][1]-robot[i][1])/(robot[i+1][0]-robot[i][0])
@@ -418,6 +419,28 @@ def RRT(robot, obstacles, startPoint, goalPoint):
     points = dict()
     tree = dict()
     path = []
+
+    # for i in range(0,len(robot)):
+    #     robot[i][0] = robot[i][0] + startPoint[0]
+    #     robot[i][1] = robot[i][1] + startPoint[1]
+
+    # for j in range(0,len(path)):
+    #     if(points[path[j]] = goalPoint):
+    #         break
+    #     if(j != len(path)-1):
+    #         pathDist = sqrt(abs((points[path[j+1]][0]-points[path[j]][0])**2 + (points[path[j+1]][0]-points[path[j]][0])**2))
+    #         for k in range(0,10):
+    #             xChange = (k/pathDist)*(points[path[j+1]][0]-points[path[j]][0])
+    #             yChange = (k/pathDist)*(points[path[j+1]][1]-points[path[j]][1])
+    #             robot[i][0] += xChange
+    #             robot[i][1] += yChange
+    #             newPoint = (robot[i][0],robot[i][1])
+    #             if(!isCollisionFree(robot,newPoint,obstacles) or robot[i][0] > 10 or robot[i][1] > 10):
+    #                 #to do: implement some sort of collission resolution.
+    #                 path[j] = path[j+1]
+
+
+
     # Your code goes here.
 
     return points, tree, path
