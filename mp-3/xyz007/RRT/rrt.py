@@ -503,6 +503,7 @@ def RRT(robot, obstacles, startPoint, goalPoint):
             if pointDist < minDist:
                 minDist = pointDist
                 minIndex = j
+
         #checking against lines formed by the adjacency list, with the random Point
         # #won't enter if there's only one other point in the Tree
         '''
@@ -515,22 +516,44 @@ def RRT(robot, obstacles, startPoint, goalPoint):
             for k in range(len(branch)):
                 start = points[j]
                 key = branch[k]
-                lineDist, point = distanceToLine(start, points[key], randPoint)
-                buff = .01
+                if start != points[key]:
+                    lineDist, point = distanceToLine(start, points[key], randPoint)
+                    buff = .01
 
-                #if the lineDist is smaller than the buffer
-                if minDist - lineDist > buff and lineDist != 0:
-                    #checking to make sure its on the relevant parts of the line
-                    left = min(start[0], points[key][0])
-                    right = max(start[0], points[key][0])
+                    #if the lineDist is smaller than the buffer
+                    if minDist - lineDist > buff and lineDist != 0:
+                        #checking to make sure its on the relevant parts of the line
+                        left = min(start[0], points[key][0])
+                        right = max(start[0], points[key][0])
 
-                    if left < randPoint[0] and randPoint[0] < right:
-                        withLine = True
-                        minDist = lineDist
+                        if left < randPoint[0] and randPoint[0] < right:
+                            withLine = True
+                            minDist = lineDist
 
-                        linePoint = point
-                        minIndex = j
-                        minIndexLine = key
+                            linePoint = point
+                            minIndex = j
+                            minIndexLine = key
+
+
+        #closest point found is on a line formed by the tree
+        if withLine:
+            #adding in the point on the line
+            points[len(points)+1] = linePoint
+            #updateAlM special for removing those two from the adjListMap??
+            #connecting it to both ends of the line
+            tree = updateALMcut(points[minIndex], linePoint, points[minIndexLine], points, tree)
+
+            pointToAdd = randPoint
+            points[len(points)+1] = pointToAdd
+            tree = updateALM(linePoint, pointToAdd, points, tree)
+
+            #for visualization
+            testLinePoints.append(linePoint)
+
+        else:
+            pointToAdd = randPoint
+            points[len(points)+1] = pointToAdd
+            tree = updateALM(points[minIndex], pointToAdd, points, tree)
 
 
         #closest point found is on a line formed by the tree
@@ -604,35 +627,6 @@ def RRT(robot, obstacles, startPoint, goalPoint):
         #         if goalCheck:
         #             #tree has been added, we can exit out of the rrt build
         #             goalFound = True
-        print "RRT"
-        print points, len(points)
-        print "\ntree"
-        print tree
-        if withLine:
-            #adding in the point on the line
-            points[len(points)+1] = linePoint
-            #updateAlM special for removing those two from the adjListMap??
-            #connecting it to both ends of the line
-            print "minIndex ", minIndex, minIndexLine
-            tree = updateALMcut(points[minIndex], linePoint, points[minIndexLine], points, tree)
-
-            pointToAdd = randPoint
-            points[len(points)+1] = pointToAdd
-            tree = updateALM(linePoint, pointToAdd, points, tree)
-
-            #for visualization
-            testLinePoints.append(linePoint)
-
-            if goalCheck:
-                goalFound = True
-
-        else:
-            pointToAdd = randPoint
-            points[len(points)+1] = pointToAdd
-            tree = updateALM(points[minIndex], pointToAdd, points, tree)
-
-            if goalCheck:
-                goalFound = True
 
 
     #find path
