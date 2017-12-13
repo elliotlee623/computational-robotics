@@ -443,8 +443,10 @@ def intersecting(point1, point2, point3, point4):
     top = max(point3[1],point4[1])
     bottom = min(point3[1],point4[1])
 
-    return x,y
-
+    if left<x and x<right and bottom<y and y<top:
+        return True
+    else:
+        return False
 '''
 Collision checking
 '''
@@ -464,45 +466,92 @@ def isCollisionFree(robot, point, obstacles):
     #               specified by intersection and left bound right bound of robot, and of point found
     #6 -        if collision in bounds - return false
 
-    movedRobot= []
+    # movedRobot= []
+    # for i in range(len(robot)):
+    #     x = robot[i][0] + point[0]
+    #     y = robot[i][1] + point[1]
+    #     movedRobot.append((round(x,4),round(y,4)))
+
+    # #navigating through the points of the robot
+    # for i in range(len(movedRobot)):
+    #     if i == len(movedRobot)-1:
+    #         # print "testing last full loop" + str(i)
+    #         p1 = movedRobot[i]
+    #         p2 = movedRobot[0]
+    #     else:
+    #         p1 = movedRobot[i]
+    #         p2 = movedRobot[i+1]
+
+    #     for j in range(len(obstacles)):
+    #         polygon = obstacles[j]
+
+    #         for k in range(len(polygon)):
+    #             if k == len(polygon)-1:
+    #                 p3 = polygon[k]
+    #                 p4 = polygon[0]
+    #             else:
+    #                 p3 = polygon[k]
+    #                 p4 = polygon[k+1]
+
+    #             x,y = intersecting(p1, p2, p3, p4)
+
+    #             left = min(p1[0],p2[0])
+    #             right = max(p1[0],p2[0])
+    #             bottom = min(p1[0],p2[0])
+    #             top = max(p1[0],p2[0])
+
+    #             if left < x and x < right:
+    #                 if bottom < y and y < top:
+    #                     #collision detected?""
+    #                     print "collision"
+    #                     return False
+
+    #translating the robot to the point given
+    # print robot[0][0], point[0]
+    robotPoints = []
     for i in range(len(robot)):
         x = robot[i][0] + point[0]
         y = robot[i][1] + point[1]
-        movedRobot.append((round(x,4),round(y,4)))
+        robotPoints.append((round(x,4),round(y,4)))
+        #robot is out of bounds
+        if robotPoints[i][0] < 0 or robotPoints[i][0] > 10:
+            print "robot out of bounds"
+            return False
+        if robotPoints[i][1] < 0 or robotPoints[i][1] > 10:
+            return False
 
-    #navigating through the points of the robot
-    for i in range(len(movedRobot)):
-        if i == len(movedRobot)-1:
-            # print "testing last full loop" + str(i)
-            p1 = movedRobot[i]
-            p2 = movedRobot[0]
-        else:
-            p1 = movedRobot[i]
-            p2 = movedRobot[i+1]
+    # # print robotPoints
 
-        for j in range(len(obstacles)):
-            polygon = obstacles[j]
-
-            for k in range(len(polygon)):
-                if k == len(polygon)-1:
-                    p3 = polygon[k]
-                    p4 = polygon[0]
+    # #running for each of the obstacles
+    for i in range(len(obstacles)):
+        #isolating each polygon
+        polygon = obstacles[i]
+        #checking all the sides for each polygon
+        for j in range(len(polygon)):
+            #looping to the end of the polygon
+            if j == len(polygon)-1:
+                p1 = polygon[j]
+                p2 = polygon[0]
+            else:
+                p1 = polygon[j]
+                p2 = polygon[j+1]
+            #line of polygon is defined by p1 and p2
+            #checking on all sides for robot
+            for k in range(len(robotPoints)):
+                #looping to close the robot
+                if k == len(robotPoints)-1:
+                    p3 = robotPoints[k]
+                    p4 = robotPoints[0]
                 else:
-                    p3 = polygon[k]
-                    p4 = polygon[k+1]
+                    p3 = robotPoints[k]
+                    p4 = robotPoints[k+1]
 
-                x,y = intersecting(p1, p2, p3, p4)
-
-                left = min(p1[0],p2[0])
-                right = max(p1[0],p2[0])
-                bottom = min(p1[0],p2[0])
-                top = max(p1[0],p2[0])
-
-                if left < x and x < right:
-                    if bottom < y and y < top:
-                        #collision detected?""
-                        print "collision"
-                        return False
+                line1 = [p1, p2]
+                line2 = [p3, p4]
+                collides = intersecting(p1,p2,p3,p4)
+                if collides:
+                    print "THERE IS COLLSIIONGODSJFLDSKJF:DLkj"
+                    return False
 
     return True
 
@@ -598,7 +647,7 @@ def RRT(robot, obstacles, startPoint, goalPoint):
             numSteps = 20
             for i in range(1,numSteps):
                 #incrementing along line to check collisions
-                stepSize = round(minDist/numSteps, sigFig)
+                stepSize = round(minDist/numSteps, sigFig)*i
                 xChange = (stepSize/minDist)*(randPoint[0]-linePoint[0])
                 yChange = (stepSize/minDist)*(randPoint[1]-linePoint[1])
                 newX = linePoint[0] + xChange
@@ -610,7 +659,7 @@ def RRT(robot, obstacles, startPoint, goalPoint):
 
                 #if a collision is found
                 if not collisionFree:
-                    print "we are breaking here??"
+                    # print "we are breaking here??"
                     break
                 # if not collisionFree:
                     # break
@@ -632,16 +681,13 @@ def RRT(robot, obstacles, startPoint, goalPoint):
                 if goalCheck:
                     goalFound = True
                     break
-            else:
-                # print points
-                print "godo to go"
 
         else:
             #number of steps along path to check
             numSteps = 20
             for i in range(1, numSteps):
                 #incrementing along the line to check collisions
-                stepSize = round(minDist/numSteps, sigFig)
+                stepSize = round(minDist/numSteps, sigFig)*i
                 xChange = (stepSize/minDist)*(randPoint[0]-points[minIndex][0])
                 yChange = (stepSize/minDist)*(randPoint[1]-points[minIndex][1])
                 newX = points[minIndex][0] + xChange
@@ -653,7 +699,7 @@ def RRT(robot, obstacles, startPoint, goalPoint):
 
                 #if a collision is found
                 if not collisionFree:
-                    print "BE:LHSD:LFKJSD"
+                    # print "BE:LHSD:LFKJSD"
                     break
             
             if collisionFree:
@@ -664,8 +710,6 @@ def RRT(robot, obstacles, startPoint, goalPoint):
                 if goalCheck:
                     goalFound = True
                     break
-            else:
-                print points
 
         count +=1
 
